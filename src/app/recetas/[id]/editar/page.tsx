@@ -15,8 +15,8 @@ export default async function EditarRecetaPage({
   const boundUpdateRecipe = updateRecipe.bind(null, recipe.id);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">Editar receta</h1>
+    <div className="mx-auto w-full max-w-3xl px-6 py-10 sm:py-12">
+      <h1 className="mb-8 text-[28px] font-semibold sm:text-3xl">Editar receta</h1>
       <RecipeForm
         action={boundUpdateRecipe}
         submitLabel="Guardar cambios"

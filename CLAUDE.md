@@ -297,10 +297,56 @@ estaba en el checklist original, pero es la forma natural de volver a ver
 listas de semanas pasadas).
 
 ### Fase 6 — Pulido
-- [ ] Responsive / mobile-first (la lista de super se usa desde el súper, en
-      el celular)
-- [ ] Empty states, loading states, manejo de errores de las APIs externas
-- [ ] Revisar accesibilidad básica (contraste, labels de formularios)
+- [x] **Aplicado el sistema de diseño real** de los mockups (Claude Design) a
+      toda la app, reemplazando la paleta/tipografía provisional de Fases
+      0-5: fuentes Fredoka + Manrope (`src/app/layout.tsx`), paleta exacta en
+      `src/app/globals.css`, sprite de íconos SVG (`src/components/icon-sprite.tsx`),
+      sidebar de navegación en desktop + tab bar inferior en mobile
+      (`src/components/app-nav.tsx`), botones tipo pill, tags de comida con
+      colores exactos, anillos de macros (`src/components/macro-rings.tsx`
+      — el % de cada anillo es real: % de calorías que aporta ese macro, no
+      un valor inventado).
+- [x] **Nueva pantalla Dashboard** en `/` (antes solo redirigía a
+      `/recetas`) — resumen semanal con tira de 7 días, accesos directos,
+      recetas recientes. No estaba en el checklist original de fases pero
+      los mockups la incluían como pantalla central de la app.
+- [x] Buscador por nombre en la biblioteca (`?q=`), no estaba construido
+      antes — se agregó porque el mockup lo mostraba y es una mejora barata.
+- [x] Responsive / mobile-first — sidebar → tab bar inferior fijo, grids se
+      apilan, formularios se apilan. La lista de super (la pantalla que más
+      importa en mobile, "parado en el súper") se probó visualmente en
+      390px y se ve bien. El planeador semanal en mobile sigue siendo una
+      tabla con scroll horizontal (7 días no caben en una pantalla chica) —
+      es una limitación aceptada, no un layout mobile-nativo por día;
+      rehacerlo sería más que "pulido".
+- [x] Empty states — biblioteca y listas de super (íconos + mensaje +
+      CTA, estilo mockup). Manejo de errores de APIs externas (Kie,
+      Anthropic) ya existía desde Fases 1-2, solo se re-estilizó.
+      **No se agregaron loading states/skeletons** (`loading.tsx` por ruta)
+      — quedó pendiente, la app es rápida en local así que no se sintió
+      urgente, pero vale la pena si se nota lag en producción.
+- [x] Accesibilidad básica — labels con `htmlFor` en todos los inputs de
+      formulario, `aria-label` en botones de solo ícono. **No se hizo una
+      auditoría formal de contraste WCAG** — los colores del sistema de
+      diseño se usaron tal cual venían de los mockups, no se verificó cada
+      combinación contra el mínimo 4.5:1.
+
+**Bug real encontrado y corregido durante este pase:** los componentes
+`Input`/`Select`/`Textarea`/`Button` concatenaban clases de Tailwind con un
+template string (`${BASE} ${className}`) — como Tailwind decide qué clase
+gana por su propio orden interno de generación (no por el orden en el
+string), pasar `className="w-28"` a un input con `w-full` en su base
+frecuentemente **no hacía nada** (el layout ignoraba el ancho custom en
+varios formularios). Se arregló instalando `tailwind-merge` y usando
+`twMerge(...)` en vez de concatenar strings — cualquier componente nuevo que
+acepte `className` y tenga estilos base conflictivos debe usar el mismo
+patrón.
+
+**Cómo se verificó:** sin acceso a un navegador real, se instaló Playwright
+temporalmente (`--no-save`, desinstalado al terminar) para tomar screenshots
+reales de cada pantalla en desktop (1440px) y mobile (390px) con datos de
+prueba, y revisarlas visualmente contra los mockups antes de dar el pase por
+terminado.
 
 ### Fase 7 — Deploy
 - [ ] Deploy a Coolify

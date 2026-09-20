@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import { Fredoka, Manrope } from "next/font/google";
+import { AppNav } from "@/components/app-nav";
+import { IconSprite } from "@/components/icon-sprite";
+import { getPendingItemsCount } from "@/lib/shopping-list";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -18,32 +22,18 @@ export const metadata: Metadata = {
   description: "Recetas, macros y lista de super para comer mejor",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const pendingItems = await getPendingItemsCount();
+
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fredoka.variable} ${manrope.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <header className="border-b border-foreground/10">
-          <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-            <Link href="/recetas" className="text-xl font-bold tracking-tight">
-              Nutri<span className="text-coral">Plus</span>
-            </Link>
-            <nav className="flex items-center gap-4 text-sm font-medium text-foreground/60">
-              <Link href="/recetas" className="hover:text-foreground">
-                Recetas
-              </Link>
-              <Link href="/plan" className="hover:text-foreground">
-                Plan semanal
-              </Link>
-              <Link href="/listas" className="hover:text-foreground">
-                Listas
-              </Link>
-            </nav>
-          </div>
-        </header>
-        <main className="flex flex-1 flex-col">{children}</main>
+      <body className="flex min-h-full bg-app-bg text-foreground">
+        <IconSprite />
+        <AppNav pendingItems={pendingItems} />
+        <main className="flex flex-1 flex-col pb-[72px] sm:pb-0">{children}</main>
       </body>
     </html>
   );

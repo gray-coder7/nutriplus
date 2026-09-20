@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { INGREDIENT_CATEGORY_LABELS } from "@/lib/constants";
+import { Icon } from "@/components/icon-sprite";
+import { MacroRings } from "@/components/macro-rings";
 import { formatQuantity } from "@/lib/format";
 import type { IngredientCategory } from "@/generated/prisma/enums";
 
@@ -17,71 +17,85 @@ type IngredientItem = {
 export function RecipeServings({
   baseServings,
   ingredients,
+  caloriesPerServing,
+  proteinG,
+  carbsG,
+  fatG,
 }: {
   baseServings: number;
   ingredients: IngredientItem[];
+  caloriesPerServing: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
 }) {
   const [servings, setServings] = useState(baseServings);
   const factor = servings / baseServings;
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap items-center gap-3">
-        <span className="text-sm font-semibold text-foreground/70">Porciones</span>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            className="h-9 w-9 rounded-full p-0 text-lg leading-none"
-            onClick={() => setServings((s) => Math.max(1, s - 1))}
-            disabled={servings <= 1}
-            aria-label="Menos porciones"
-          >
-            −
-          </Button>
-          <span className="w-8 text-center text-lg font-bold tabular-nums">{servings}</span>
-          <Button
-            type="button"
-            variant="secondary"
-            className="h-9 w-9 rounded-full p-0 text-lg leading-none"
-            onClick={() => setServings((s) => s + 1)}
-            aria-label="Más porciones"
-          >
-            +
-          </Button>
+      <div className="flex items-center justify-between">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[15px] font-bold">Porciones</span>
+          {servings !== baseServings && (
+            <button
+              type="button"
+              onClick={() => setServings(baseServings)}
+              className="text-[11px] font-bold text-coral-dark underline underline-offset-2"
+            >
+              Restablecer
+            </button>
+          )}
         </div>
-        {servings !== baseServings && (
+        <div className="flex items-center gap-3.5">
           <button
             type="button"
-            onClick={() => setServings(baseServings)}
-            className="text-xs font-medium text-coral-dark underline underline-offset-2"
+            onClick={() => setServings((s) => Math.max(1, s - 1))}
+            disabled={servings <= 1}
+            aria-label="Quitar porción"
+            className="flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] border-border bg-surface text-[#4A4844] disabled:opacity-40"
           >
-            Restablecer a {baseServings}
+            <Icon name="minus" size={15} />
           </button>
-        )}
+          <span className="font-display min-w-5 text-center text-xl font-semibold tabular-nums">
+            {servings}
+          </span>
+          <button
+            type="button"
+            onClick={() => setServings((s) => s + 1)}
+            aria-label="Agregar porción"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-coral text-white"
+          >
+            <Icon name="plus" size={15} />
+          </button>
+        </div>
       </div>
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-lg font-bold">Ingredientes</h2>
-        <ul className="flex flex-col gap-1.5">
-          {ingredients.map((ingredient) => (
+      <MacroRings
+        caloriesPerServing={caloriesPerServing}
+        proteinG={proteinG}
+        carbsG={carbsG}
+        fatG={fatG}
+      />
+
+      <div className="h-px bg-border" />
+
+      <div>
+        <h2 className="mb-2.5 text-[15px] font-bold">Ingredientes</h2>
+        <ul>
+          {ingredients.map((ingredient, i) => (
             <li
               key={ingredient.id}
-              className="flex items-center justify-between rounded-lg border border-foreground/10 px-3 py-2 text-sm"
+              className={`flex justify-between py-2.5 text-sm ${i < ingredients.length - 1 ? "border-b border-border-light" : ""}`}
             >
               <span>{ingredient.name}</span>
-              <span className="flex items-center gap-2 text-foreground/60">
-                <span className="tabular-nums">
-                  {formatQuantity(ingredient.quantity * factor)} {ingredient.unit}
-                </span>
-                <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-xs">
-                  {INGREDIENT_CATEGORY_LABELS[ingredient.category]}
-                </span>
+              <span className="font-semibold text-ink-soft tabular-nums">
+                {formatQuantity(ingredient.quantity * factor)} {ingredient.unit}
               </span>
             </li>
           ))}
         </ul>
-      </section>
+      </div>
     </>
   );
 }

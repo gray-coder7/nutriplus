@@ -73,6 +73,23 @@ export function getShoppingListForMealPlan(mealPlanId: string) {
   });
 }
 
+export async function getLatestShoppingListSummary() {
+  const latest = await prisma.shoppingList.findFirst({
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+  if (!latest) return null;
+  const pending = await prisma.shoppingListItem.count({
+    where: { shoppingListId: latest.id, isChecked: false },
+  });
+  return { id: latest.id, pending };
+}
+
+export async function getPendingItemsCount(): Promise<number> {
+  const summary = await getLatestShoppingListSummary();
+  return summary?.pending ?? 0;
+}
+
 export function listShoppingLists() {
   return prisma.shoppingList.findMany({
     orderBy: { createdAt: "desc" },

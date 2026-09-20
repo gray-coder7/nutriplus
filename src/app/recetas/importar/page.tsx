@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { createRecipe, extractRecipe } from "@/app/recetas/actions";
+import { Icon } from "@/components/icon-sprite";
 import { RecipeForm } from "@/components/recipe-form";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/field";
@@ -15,8 +16,8 @@ export default function ImportarRecetaPage() {
 
   if (state?.status === "success") {
     return (
-      <div className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="mb-8 text-3xl font-bold tracking-tight">Revisa la receta</h1>
+      <div className="mx-auto w-full max-w-3xl px-6 py-10 sm:py-12">
+        <h1 className="mb-8 text-[28px] font-semibold sm:text-3xl">Revisa la receta</h1>
         <RecipeForm
           action={createRecipe}
           submitLabel="Guardar receta"
@@ -27,12 +28,15 @@ export default function ImportarRecetaPage() {
             sourceRawText: state.sourceRawText,
           }}
           banner={
-            <div className="rounded-lg bg-lime/10 px-4 py-3 text-sm text-lime-900">
-              Generado con IA a partir de{" "}
-              {state.sourceType === "URL_IMPORT" ? "el link que pegaste" : "el texto que pegaste"}.
-              Revisa nombre, macros, ingredientes y pasos antes de guardar — la IA puede
-              equivocarse.
-              {state.warning && <p className="mt-1 font-medium">{state.warning}</p>}
+            <div className="flex items-start gap-2.5 rounded-2xl bg-lime-tint px-4 py-3 text-sm text-lime-dark">
+              <Icon name="sparkles" size={17} className="mt-0.5 shrink-0" />
+              <p>
+                Generado con IA a partir de{" "}
+                {state.sourceType === "URL_IMPORT" ? "el link que pegaste" : "el texto que pegaste"}.
+                Revisa nombre, macros, ingredientes y pasos antes de guardar — la IA puede
+                equivocarse.
+                {state.warning && <span className="mt-1 block font-bold">{state.warning}</span>}
+              </p>
             </div>
           }
         />
@@ -41,9 +45,9 @@ export default function ImportarRecetaPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">Importar receta con IA</h1>
-      <p className="mb-8 text-foreground/60">
+    <div className="mx-auto w-full max-w-2xl px-6 py-10 sm:py-12">
+      <h1 className="mb-2 text-[28px] font-semibold sm:text-3xl">Importar receta con IA</h1>
+      <p className="mb-8 text-ink-soft">
         Pega el texto de una receta o el link de un sitio, un reel de Instagram o un video
         de TikTok. La IA arma la receta y la puedes ajustar antes de guardarla.
       </p>
@@ -52,10 +56,10 @@ export default function ImportarRecetaPage() {
         <button
           type="button"
           onClick={() => setMode("text")}
-          className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+          className={`rounded-full border-[1.5px] px-4 py-2 text-[13px] font-bold transition-colors ${
             mode === "text"
-              ? "border-coral bg-coral text-white"
-              : "border-foreground/15 text-foreground/70"
+              ? "border-transparent bg-coral-tint text-coral-dark"
+              : "border-border text-[#4A4844]"
           }`}
         >
           Pegar texto
@@ -63,10 +67,10 @@ export default function ImportarRecetaPage() {
         <button
           type="button"
           onClick={() => setMode("url")}
-          className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+          className={`rounded-full border-[1.5px] px-4 py-2 text-[13px] font-bold transition-colors ${
             mode === "url"
-              ? "border-coral bg-coral text-white"
-              : "border-foreground/15 text-foreground/70"
+              ? "border-transparent bg-coral-tint text-coral-dark"
+              : "border-border text-[#4A4844]"
           }`}
         >
           Pegar link
@@ -83,6 +87,7 @@ export default function ImportarRecetaPage() {
               id="rawText"
               name="rawText"
               rows={10}
+              className="resize-none"
               placeholder="Pega aquí la receta tal cual la tengas: ingredientes, pasos, lo que sea..."
             />
           </div>
@@ -99,17 +104,17 @@ export default function ImportarRecetaPage() {
         )}
 
         {state?.status === "error" && (
-          <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{state.error}</p>
+          <p className="rounded-2xl bg-error/10 px-4 py-3 text-sm font-medium text-error">
+            {state.error}
+          </p>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Button type="submit" disabled={pending}>
-            {pending ? "Analizando..." : "Analizar con IA"}
+            <Icon name="sparkles" size={16} />
+            {pending ? "Analizando…" : "Analizar con IA"}
           </Button>
-          <Link
-            href="/recetas"
-            className="text-sm font-medium text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/recetas" className="text-sm font-bold text-ink-soft hover:text-ink">
             Cancelar
           </Link>
         </div>

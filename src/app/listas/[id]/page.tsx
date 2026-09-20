@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { addManualItem, generateOrRegenerateShoppingList } from "@/app/listas/actions";
+import { Icon } from "@/components/icon-sprite";
 import { ShoppingListChecklist } from "@/components/shopping-list-checklist";
 import { Button } from "@/components/ui/button";
-import { Input, Select } from "@/components/ui/field";
+import { Select } from "@/components/ui/field";
 import { INGREDIENT_CATEGORY_LABELS, INGREDIENT_CATEGORY_ORDER } from "@/lib/constants";
 import { getShoppingListById } from "@/lib/shopping-list";
 import { formatWeekRangeLabel } from "@/lib/week";
@@ -21,55 +22,64 @@ export default async function ShoppingListPage({
   const checked = list.items.filter((item) => item.isChecked).length;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-10 sm:py-11">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Lista de súper</h1>
+        <h1 className="text-[28px] font-semibold">Lista de súper</h1>
         {list.mealPlanId && (
           <form action={generateOrRegenerateShoppingList.bind(null, list.mealPlanId)}>
             <Button type="submit" variant="secondary">
-              🔄 Regenerar desde el plan
+              <Icon name="sparkles" size={16} />
+              Regenerar desde el plan
             </Button>
           </form>
         )}
       </div>
 
-      {list.mealPlan && (
-        <p className="mb-1 text-foreground/70">
-          Semana del {formatWeekRangeLabel(list.mealPlan.weekStartDate)}
-        </p>
-      )}
-      <p className="mb-8 text-sm text-foreground/50">
-        {checked} de {total} comprados
+      <p className="mb-8 text-sm text-ink-soft">
+        {list.mealPlan && <>Semana del {formatWeekRangeLabel(list.mealPlan.weekStartDate)} · </>}
+        {total} ingredientes · {checked} ya en tu carrito
       </p>
 
-      <div className="mb-8">
-        <ShoppingListChecklist items={list.items} shoppingListId={list.id} />
-      </div>
-
-      <section>
-        <h2 className="mb-3 text-lg font-bold">Agregar algo más</h2>
-        <form
-          action={addManualItem.bind(null, list.id)}
-          className="grid grid-cols-2 gap-2 sm:grid-cols-[2fr_1fr_1fr_1.5fr_auto]"
-        >
-          <Input name="name" placeholder="Ej. Papel de baño" required className="col-span-2 sm:col-span-1" />
-          <Input name="quantity" type="number" min={0} step="any" placeholder="Cant." />
-          <Input name="unit" placeholder="Unidad" />
-          <Select name="category" defaultValue="OTHER">
+      <form
+        action={addManualItem.bind(null, list.id)}
+        className="mb-8 flex flex-col gap-2.5 sm:flex-row"
+      >
+        <div className="flex flex-1 flex-wrap items-center gap-2.5 rounded-2xl border border-border bg-surface p-2 sm:flex-nowrap">
+          <Icon name="plus" size={16} className="ml-2 shrink-0 text-ink-faint" />
+          <input
+            name="name"
+            placeholder="Agregar ítem manual…"
+            required
+            className="min-w-[140px] flex-1 border-none bg-transparent px-1 py-1.5 text-sm outline-none placeholder:text-ink-placeholder"
+          />
+          <input
+            name="quantity"
+            type="number"
+            min={0}
+            step="any"
+            placeholder="Cant."
+            className="w-16 rounded-xl border border-border px-2 py-1.5 text-sm outline-none focus:border-coral"
+          />
+          <input
+            name="unit"
+            placeholder="Unidad"
+            className="w-20 rounded-xl border border-border px-2 py-1.5 text-sm outline-none focus:border-coral"
+          />
+          <Select name="category" defaultValue="OTHER" className="w-auto py-1.5 text-sm">
             {INGREDIENT_CATEGORY_ORDER.map((category) => (
               <option key={category} value={category}>
                 {INGREDIENT_CATEGORY_LABELS[category]}
               </option>
             ))}
           </Select>
-          <Button type="submit" className="col-span-2 sm:col-span-1">
-            + Agregar
-          </Button>
-        </form>
-      </section>
+        </div>
+        <Button type="submit">Agregar</Button>
+      </form>
+
+      <ShoppingListChecklist items={list.items} shoppingListId={list.id} />
 
       <div className="mt-10">
-        <Link href="/listas" className="text-sm font-medium text-foreground/60 hover:text-foreground">
+        <Link href="/listas" className="text-sm font-bold text-ink-soft hover:text-ink">
           ← Todas las listas
         </Link>
       </div>

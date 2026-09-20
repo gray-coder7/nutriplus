@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useId, useState } from "react";
 import type { RecipeActionState } from "@/app/recetas/actions";
+import { Icon } from "@/components/icon-sprite";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/field";
 import {
@@ -43,6 +44,10 @@ export type RecipeFormInitialValues = {
     category: IngredientCategory;
   }>;
 };
+
+function iconButtonClasses(extra = "") {
+  return `flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl border-[1.5px] border-border bg-surface text-ink-faint hover:text-error ${extra}`;
+}
 
 export function RecipeForm({
   action,
@@ -117,7 +122,7 @@ export function RecipeForm({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-8">
+    <form action={formAction} className="flex flex-col gap-9">
       {sourceMeta && (
         <>
           <input type="hidden" name="sourceType" value={sourceMeta.sourceType} />
@@ -130,7 +135,7 @@ export function RecipeForm({
         </>
       )}
       {banner}
-      <section className="flex flex-col gap-4">
+      <section className="flex flex-col gap-5">
         <div>
           <Label htmlFor="name">Nombre de la receta</Label>
           <Input
@@ -143,7 +148,7 @@ export function RecipeForm({
         </div>
 
         <div>
-          <Label htmlFor="description">Descripción general</Label>
+          <Label htmlFor="description">Descripción</Label>
           <Textarea
             id="description"
             name="description"
@@ -151,11 +156,12 @@ export function RecipeForm({
             rows={3}
             defaultValue={initialValues?.description}
             placeholder="Un platillo rápido y balanceado, ideal para..."
+            className="resize-none"
           />
         </div>
 
         <div>
-          <Label>Etiquetas de comida</Label>
+          <Label>Etiquetas (selección múltiple)</Label>
           <div className="flex flex-wrap gap-2">
             {MEAL_TYPE_ORDER.map((type) => (
               <label key={type} className="cursor-pointer">
@@ -166,16 +172,14 @@ export function RecipeForm({
                   defaultChecked={initialValues?.mealTypes.includes(type)}
                   className="peer sr-only"
                 />
-                <span className="inline-block rounded-full border border-foreground/15 px-4 py-1.5 text-sm font-medium text-foreground/70 transition-colors peer-checked:border-coral peer-checked:bg-coral peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-coral/40">
+                <span className="inline-block rounded-full border-[1.5px] border-border px-4 py-2 text-[13px] font-bold text-[#4A4844] transition-colors peer-checked:border-transparent peer-checked:bg-coral-tint peer-checked:text-coral-dark peer-focus-visible:ring-2 peer-focus-visible:ring-coral/40">
                   {MEAL_TYPE_LABELS[type]}
                 </span>
               </label>
             ))}
           </div>
         </div>
-      </section>
 
-      <section className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <div>
           <Label htmlFor="baseServings">Porciones base</Label>
           <Input
@@ -185,77 +189,85 @@ export function RecipeForm({
             min={1}
             step={1}
             required
+            className="w-28"
             defaultValue={initialValues?.baseServings ?? 2}
           />
         </div>
+
         <div>
-          <Label htmlFor="caloriesPerServing">Cal / porción</Label>
-          <Input
-            id="caloriesPerServing"
-            name="caloriesPerServing"
-            type="number"
-            min={0}
-            step={1}
-            required
-            defaultValue={initialValues?.caloriesPerServing ?? 0}
-          />
-        </div>
-        <div>
-          <Label htmlFor="proteinGPerServing">Proteína (g)</Label>
-          <Input
-            id="proteinGPerServing"
-            name="proteinGPerServing"
-            type="number"
-            min={0}
-            step="any"
-            required
-            defaultValue={initialValues?.proteinGPerServing ?? 0}
-          />
-        </div>
-        <div>
-          <Label htmlFor="carbsGPerServing">Carbos (g)</Label>
-          <Input
-            id="carbsGPerServing"
-            name="carbsGPerServing"
-            type="number"
-            min={0}
-            step="any"
-            required
-            defaultValue={initialValues?.carbsGPerServing ?? 0}
-          />
-        </div>
-        <div>
-          <Label htmlFor="fatGPerServing">Grasa (g)</Label>
-          <Input
-            id="fatGPerServing"
-            name="fatGPerServing"
-            type="number"
-            min={0}
-            step="any"
-            required
-            defaultValue={initialValues?.fatGPerServing ?? 0}
-          />
+          <Label>Macronutrientes por porción</Label>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div>
+              <span className="mb-1.5 block text-xs font-semibold text-ink-soft">
+                Calorías (kcal)
+              </span>
+              <Input
+                name="caloriesPerServing"
+                type="number"
+                min={0}
+                step={1}
+                required
+                defaultValue={initialValues?.caloriesPerServing ?? 0}
+              />
+            </div>
+            <div>
+              <span className="mb-1.5 block text-xs font-semibold text-ink-soft">
+                Proteína (g)
+              </span>
+              <Input
+                name="proteinGPerServing"
+                type="number"
+                min={0}
+                step="any"
+                required
+                defaultValue={initialValues?.proteinGPerServing ?? 0}
+              />
+            </div>
+            <div>
+              <span className="mb-1.5 block text-xs font-semibold text-ink-soft">
+                Carbohidratos (g)
+              </span>
+              <Input
+                name="carbsGPerServing"
+                type="number"
+                min={0}
+                step="any"
+                required
+                defaultValue={initialValues?.carbsGPerServing ?? 0}
+              />
+            </div>
+            <div>
+              <span className="mb-1.5 block text-xs font-semibold text-ink-soft">
+                Grasa (g)
+              </span>
+              <Input
+                name="fatGPerServing"
+                type="number"
+                min={0}
+                step="any"
+                required
+                defaultValue={initialValues?.fatGPerServing ?? 0}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <Label className="mb-0">Ingredientes</Label>
-          <Button type="button" variant="secondary" onClick={addIngredientRow}>
-            + Agregar ingrediente
-          </Button>
+          <button
+            type="button"
+            onClick={addIngredientRow}
+            className="flex items-center gap-1.5 text-[14px] font-bold text-coral-dark"
+          >
+            <Icon name="plus" size={16} />
+            Agregar ingrediente
+          </button>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {ingredientRows.map((row) => (
-            <div
-              key={row.key}
-              className="grid grid-cols-[1fr_5rem_6rem_9rem_auto] items-center gap-2 rounded-lg border border-foreground/10 p-2"
-            >
-              <Input
-                name="ingredientName"
-                defaultValue={row.name}
-                placeholder="Ingrediente"
-              />
+            <div key={row.key} className="flex flex-wrap items-center gap-2.5">
               <Input
                 name="ingredientQuantity"
                 type="number"
@@ -263,27 +275,39 @@ export function RecipeForm({
                 step="any"
                 defaultValue={row.quantity}
                 placeholder="Cant."
+                className="w-20"
               />
               <Input
                 name="ingredientUnit"
                 defaultValue={row.unit}
-                placeholder="g, taza..."
+                placeholder="unidad"
+                className="w-28"
               />
-              <Select name="ingredientCategory" defaultValue={row.category ?? "OTHER"}>
+              <Input
+                name="ingredientName"
+                defaultValue={row.name}
+                placeholder="Ingrediente"
+                className="min-w-[160px] flex-1"
+              />
+              <Select
+                name="ingredientCategory"
+                defaultValue={row.category ?? "OTHER"}
+                className="w-40"
+              >
                 {INGREDIENT_CATEGORY_ORDER.map((category) => (
                   <option key={category} value={category}>
                     {INGREDIENT_CATEGORY_LABELS[category]}
                   </option>
                 ))}
               </Select>
-              <Button
+              <button
                 type="button"
-                variant="danger"
                 onClick={() => removeIngredientRow(row.key)}
                 aria-label="Quitar ingrediente"
+                className={iconButtonClasses()}
               >
-                Quitar
-              </Button>
+                <Icon name="trash" size={16} />
+              </button>
             </div>
           ))}
         </div>
@@ -291,74 +315,74 @@ export function RecipeForm({
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <Label className="mb-0">Instrucciones de preparación</Label>
-          <Button type="button" variant="secondary" onClick={addInstructionRow}>
-            + Agregar paso
-          </Button>
+          <Label className="mb-0">Instrucciones</Label>
+          <button
+            type="button"
+            onClick={addInstructionRow}
+            className="flex items-center gap-1.5 text-[14px] font-bold text-coral-dark"
+          >
+            <Icon name="plus" size={16} />
+            Agregar paso
+          </button>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {instructionRows.map((row, index) => (
-            <div key={row.key} className="flex items-start gap-2">
-              <span className="mt-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-coral/10 text-sm font-semibold text-coral-dark">
+            <div key={row.key} className="flex items-start gap-2.5">
+              <div className="mt-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-coral-tint text-[13px] font-bold text-coral-dark">
                 {index + 1}
-              </span>
+              </div>
               <Textarea
                 name="instructionStep"
                 rows={2}
                 value={row.value}
                 onChange={(e) => updateInstructionValue(row.key, e.target.value)}
                 placeholder={`Paso ${index + 1}`}
-                className="flex-1"
+                className="flex-1 resize-none"
               />
-              <div className="flex flex-col gap-1">
-                <Button
+              <div className="flex flex-col gap-1.5">
+                <button
                   type="button"
-                  variant="secondary"
                   onClick={() => moveInstructionRow(index, -1)}
                   disabled={index === 0}
                   aria-label="Subir paso"
-                  className="px-2 py-1"
+                  className={iconButtonClasses("h-[18px] hover:text-coral-dark disabled:opacity-30")}
                 >
                   ↑
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="secondary"
                   onClick={() => moveInstructionRow(index, 1)}
                   disabled={index === instructionRows.length - 1}
                   aria-label="Bajar paso"
-                  className="px-2 py-1"
+                  className={iconButtonClasses("h-[18px] hover:text-coral-dark disabled:opacity-30")}
                 >
                   ↓
-                </Button>
+                </button>
               </div>
-              <Button
+              <button
                 type="button"
-                variant="danger"
                 onClick={() => removeInstructionRow(row.key)}
                 aria-label="Quitar paso"
+                className={iconButtonClasses()}
               >
-                Quitar
-              </Button>
+                <Icon name="trash" size={16} />
+              </button>
             </div>
           ))}
         </div>
       </section>
 
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-2xl bg-error/10 px-4 py-3 text-sm font-medium text-error">
           {state.error}
         </p>
       )}
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <Button type="submit" disabled={pending}>
-          {pending ? "Guardando..." : submitLabel}
+          {pending ? "Guardando…" : submitLabel}
         </Button>
-        <Link
-          href="/recetas"
-          className="text-sm font-medium text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/recetas" className="text-sm font-bold text-ink-soft hover:text-ink">
           Cancelar
         </Link>
       </div>

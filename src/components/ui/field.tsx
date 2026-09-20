@@ -1,25 +1,26 @@
 import { type ComponentProps } from "react";
+import { twMerge } from "tailwind-merge";
 
 const FIELD_CLASSES =
-  "w-full rounded-lg border border-foreground/15 bg-white px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/30";
+  "w-full rounded-2xl border-[1.5px] border-border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-placeholder focus:border-coral focus:outline-none";
 
 export function Label({ className = "", ...props }: ComponentProps<"label">) {
   return (
     <label
-      className={`mb-1 block text-sm font-semibold text-foreground/80 ${className}`}
+      className={twMerge("mb-1.5 block text-[13px] font-bold text-[#4A4844]", className)}
       {...props}
     />
   );
 }
 
 export function Input({ className = "", ...props }: ComponentProps<"input">) {
-  return <input className={`${FIELD_CLASSES} ${className}`} {...props} />;
+  return <input className={twMerge(FIELD_CLASSES, className)} {...props} />;
 }
 
 export function Textarea({ className = "", ...props }: ComponentProps<"textarea">) {
-  return <textarea className={`${FIELD_CLASSES} ${className}`} {...props} />;
+  return <textarea className={twMerge(FIELD_CLASSES, className)} {...props} />;
 }
 
 export function Select({ className = "", ...props }: ComponentProps<"select">) {
-  return <select className={`${FIELD_CLASSES} ${className}`} {...props} />;
+  return <select className={twMerge(FIELD_CLASSES, className)} {...props} />;
 }

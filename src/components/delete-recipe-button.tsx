@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { deleteRecipe } from "@/app/recetas/actions";
+import { Icon } from "@/components/icon-sprite";
 import { Button } from "@/components/ui/button";
 
 export function DeleteRecipeButton({ id }: { id: string }) {
@@ -12,6 +13,7 @@ export function DeleteRecipeButton({ id }: { id: string }) {
       type="button"
       variant="danger"
       disabled={pending}
+      className="w-full"
       onClick={() => {
         if (!window.confirm("¿Eliminar esta receta? No se puede deshacer.")) return;
         startTransition(() => {
@@ -19,7 +21,8 @@ export function DeleteRecipeButton({ id }: { id: string }) {
         });
       }}
     >
-      {pending ? "Eliminando..." : "Eliminar"}
+      <Icon name="trash" size={15} />
+      {pending ? "Eliminando…" : "Eliminar receta"}
     </Button>
   );
 }

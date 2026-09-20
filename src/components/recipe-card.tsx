@@ -1,18 +1,17 @@
 import Link from "next/link";
-import { MEAL_TYPE_COLORS, MEAL_TYPE_LABELS } from "@/lib/constants";
+import { Icon } from "@/components/icon-sprite";
+import { MEAL_TYPE_COLORS, MEAL_TYPE_LABELS, recipeFallbackGradient } from "@/lib/constants";
 import type { MealType } from "@/generated/prisma/enums";
 
 export function RecipeCard({
   id,
   name,
-  description,
   mealTypes,
   caloriesPerServing,
   imageUrl,
 }: {
   id: string;
   name: string;
-  description: string;
   mealTypes: MealType[];
   caloriesPerServing: number;
   imageUrl: string | null;
@@ -20,33 +19,35 @@ export function RecipeCard({
   return (
     <Link
       href={`/recetas/${id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-foreground/10 bg-white shadow-sm transition-shadow hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_10px_24px_rgba(43,42,40,.07)] transition-transform hover:-translate-y-0.5"
     >
-      <div className="flex h-40 items-center justify-center bg-gradient-to-br from-sun/30 via-coral/20 to-turquoise/20">
+      <div
+        className={`flex h-[170px] items-center justify-center bg-gradient-to-br ${recipeFallbackGradient(id)}`}
+      >
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
-          <span className="text-4xl">🥗</span>
+          <Icon name="food" size={40} className="text-white/55" />
         )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="font-semibold text-foreground group-hover:text-coral-dark">
-          {name}
-        </h3>
-        <p className="line-clamp-2 text-sm text-foreground/60">{description}</p>
-        <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-2">
+        <div className="flex flex-wrap gap-1.5">
           {mealTypes.map((type) => (
             <span
               key={type}
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${MEAL_TYPE_COLORS[type]}`}
+              className={`w-fit rounded-full px-3 py-1 text-[11px] font-bold ${MEAL_TYPE_COLORS[type]}`}
             >
               {MEAL_TYPE_LABELS[type]}
             </span>
           ))}
-          <span className="ml-auto text-xs font-medium text-foreground/50">
-            {caloriesPerServing} kcal
-          </span>
+        </div>
+        <h3 className="font-display text-base font-semibold text-ink group-hover:text-coral-dark">
+          {name}
+        </h3>
+        <div className="mt-auto flex items-center gap-1.5 text-xs font-semibold text-ink-soft">
+          <Icon name="flame" size={13} />
+          {caloriesPerServing} kcal
         </div>
       </div>
     </Link>

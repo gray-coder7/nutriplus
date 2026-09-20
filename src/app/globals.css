@@ -1,43 +1,92 @@
 @import "tailwindcss";
 
 /*
- * Paleta provisional "alegre / fitness". Se ajustara con los valores
- * exactos que salgan de los mockups (ver design-mockups-prompt.md).
+ * Sistema de diseño real de NutriPlus (Claude Design,
+ * https://claude.ai/artifact/361RvDSm4Bbxxcvcpve2jH). Alegre, energético,
+ * "fitness app moderna" — nada clínico, nada minimalista-frío.
  */
 :root {
-  --background: #fffdf9;
-  --foreground: #232323;
+  --background: #f6f5f0;
+  --foreground: #2b2a28;
 
-  --color-coral: #ff6b4a;
-  --color-coral-dark: #e14e2e;
-  --color-lime: #a8e026;
-  --color-turquoise: #1fc8b8;
-  --color-sun: #ffc93c;
-  --color-berry: #ff4fa3;
+  --color-coral: #ff6a3d;
+  --color-coral-dark: #e8562a;
+  --color-coral-tint: #ffe8de;
+
+  --color-lime: #8cc63f;
+  --color-lime-dark: #72a934;
+  --color-lime-tint: #eaf7d9;
+
+  --color-aqua: #21c7b8;
+  --color-aqua-dark: #1aa398;
+  --color-aqua-tint: #dff7f4;
+
+  --color-sun: #ffc633;
+  --color-sun-dark: #e8a700;
+  --color-sun-tint: #fff3d6;
+
+  --color-berry: #e14f82;
+  --color-berry-dark: #c23768;
+  --color-berry-tint: #fde3ec;
+
+  --color-ink: #2b2a28;
+  --color-ink-soft: #6b6862;
+  --color-ink-faint: #918d85;
+  --color-ink-placeholder: #a8a49c;
+
+  --color-border: #eae7e0;
+  --color-border-light: #f0eee7;
+  --color-surface: #ffffff;
+  --color-app-bg: #f6f5f0;
+  --color-disabled: #d8d4cc;
+  --color-error: #e5484d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --color-coral: var(--color-coral);
   --color-coral-dark: var(--color-coral-dark);
+  --color-coral-tint: var(--color-coral-tint);
   --color-lime: var(--color-lime);
-  --color-turquoise: var(--color-turquoise);
+  --color-lime-dark: var(--color-lime-dark);
+  --color-lime-tint: var(--color-lime-tint);
+  --color-aqua: var(--color-aqua);
+  --color-aqua-dark: var(--color-aqua-dark);
+  --color-aqua-tint: var(--color-aqua-tint);
   --color-sun: var(--color-sun);
+  --color-sun-dark: var(--color-sun-dark);
+  --color-sun-tint: var(--color-sun-tint);
   --color-berry: var(--color-berry);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-berry-dark: var(--color-berry-dark);
+  --color-berry-tint: var(--color-berry-tint);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #171512;
-    --foreground: #f5f1ea;
-  }
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ink-faint: var(--color-ink-faint);
+  --color-ink-placeholder: var(--color-ink-placeholder);
+  --color-border: var(--color-border);
+  --color-border-light: var(--color-border-light);
+  --color-surface: var(--color-surface);
+  --color-app-bg: var(--color-app-bg);
+  --color-disabled: var(--color-disabled);
+  --color-error: var(--color-error);
+
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-fredoka);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-weight: 600;
 }
