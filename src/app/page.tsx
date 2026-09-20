@@ -45,7 +45,7 @@ export default async function DashboardPage() {
     <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-10 sm:py-12">
       <div className="mb-7">
         <p className="text-[13px] font-semibold text-ink-soft sm:hidden">{todayLabel()}</p>
-        <h1 className="text-2xl font-semibold sm:text-[30px]">Hola, Jorge</h1>
+        <h1 className="text-2xl font-semibold sm:text-[30px]">Hola, Cuchos</h1>
         <p className="mt-1.5 hidden text-base text-ink-soft sm:block">
           {todayLabel()} · aquí tienes el resumen de tu semana.
         </p>
