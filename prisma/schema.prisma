@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  BRUNCH
+  SNACK
+}
+
+enum IngredientCategory {
+  PRODUCE
+  PROTEIN
+  DAIRY
+  PANTRY
+  SPICES
+  FROZEN
+  BEVERAGES
+  OTHER
+}
+
+/// How a recipe entered the system — feeds the "agregar receta" flows
+/// (manual, pegar texto libre + IA, o importar desde una URL/reel/tiktok).
+enum RecipeSourceType {
+  MANUAL
+  TEXT_IMPORT
+  URL_IMPORT
+}
+
+model Recipe {
+  id          String     @id @default(cuid())
+  name        String
+  description String     @db.Text
+  mealTypes   MealType[]
+
+  imageUrl    String?
+  imagePrompt String?    @db.Text
+
+  baseServings       Int
+  caloriesPerServing Int
+  proteinGPerServing Float
+  carbsGPerServing   Float
+  fatGPerServing     Float
+
+  instructions String @db.Text
+
+  sourceType    RecipeSourceType @default(MANUAL)
+  sourceUrl     String?
+  sourceRawText String?          @db.Text
+
+  ingredients   Ingredient[]
+  mealPlanItems MealPlanItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ingredient {
+  id       String @id @default(cuid())
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  name     String
+  quantity Float
+  unit     String
+
+  category  IngredientCategory @default(OTHER)
+  sortOrder Int                @default(0)
+
+  @@index([recipeId])
+}
+
+model MealPlan {
+  id            String   @id @default(cuid())
+  name          String?
+  weekStartDate DateTime
+
+  items         MealPlanItem[]
+  shoppingLists ShoppingList[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MealPlanItem {
+  id         String   @id @default(cuid())
+  mealPlanId String
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+
+  /// 0 = lunes ... 6 = domingo
+  dayOfWeek Int
+  mealType  MealType
+  servings  Int
+
+  @@index([mealPlanId])
+  @@index([recipeId])
+}
+
+model ShoppingList {
+  id         String    @id @default(cuid())
+  mealPlanId String?
+  mealPlan   MealPlan? @relation(fields: [mealPlanId], references: [id])
+
+  items ShoppingListItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mealPlanId])
+}
+
+model ShoppingListItem {
+  id             String       @id @default(cuid())
+  shoppingListId String
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+
+  name     String
+  quantity Float?
+  unit     String?
+  category IngredientCategory @default(OTHER)
+
+  isChecked       Boolean  @default(false)
+  sourceRecipeIds String[]
+
+  sortOrder Int @default(0)
+
+  @@index([shoppingListId])
+}
