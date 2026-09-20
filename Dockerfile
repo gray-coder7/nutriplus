@@ -17,6 +17,9 @@ RUN npm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
+# python3/ffmpeg/yt-dlp: para descargar y extraer el audio de reels de
+# Instagram/TikTok antes de transcribirlos (ver src/lib/video-transcription.ts)
+RUN apk add --no-cache python3 ffmpeg yt-dlp
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public

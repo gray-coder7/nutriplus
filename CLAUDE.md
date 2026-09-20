@@ -55,13 +55,20 @@ sin necesidad de features multiusuario/colaborativas.
     instrucciones, porciones)
   - Estimar/sugerir macronutrientes cuando no se proporcionan
   - Generar el prompt de imagen para mandar a Kie
+- **Transcripción de video** (Instagram/TikTok → receta): `yt-dlp` (CLI,
+  `brew install yt-dlp` en dev) descarga el video y extrae el audio con
+  ffmpeg; **Whisper de OpenAI** (`gpt-4o-transcribe`, SDK oficial `openai`,
+  key en `OPENAI_API_KEY`) lo transcribe. El transcript se le pasa al mismo
+  Claude que ya estructuraba texto/JSON-LD. Ver `src/lib/video-transcription.ts`
+  y la nota en Fase 1.
 - **Deploy**: Coolify (hay MCP de Coolify RawCloud conectado en este entorno)
 
 ### Manejo de secretos
 
 `conections.md` en la raíz del repo contiene credenciales reales en texto plano
 (API key de Anthropic, connection string de Postgres con usuario/password, key
-de Kie). **Nunca** copiar esos valores a código fuente, commits, o este archivo.
+de Kie, key de OpenAI, key de DeepSeek — esta última aún sin usar en el código).
+**Nunca** copiar esos valores a código fuente, commits, o este archivo.
 
 - Las credenciales reales viven en `.env.local` (ignorado por git), leídas desde
   `conections.md` una sola vez al hacer el setup inicial.
@@ -177,27 +184,63 @@ Reglas clave:
       - **Extracción de URL** (`fetchUrlContent`): primero intenta JSON-LD
         `schema.org/Recipe` (dato estructurado, el más confiable, típico en
         sitios de recetas); si no hay, cae a `og:description` + texto plano
-        de la página. Para TikTok usa el endpoint público de oEmbed
-        (caption del video, no hay transcripción de audio). Instagram no
-        tiene una vía confiable sin login — si la extracción da muy poco
-        contenido, se le pide al usuario pegar el texto/caption directamente
-        en vez de la URL.
+        de la página.
+      - **Instagram/TikTok — transcripción real de audio** (agregada después
+        de la primera pasada de esta fase, ver más abajo): para esos dos
+        hosts, `fetchUrlContent` ahora intenta primero
+        `transcribeVideoFromUrl` (`src/lib/video-transcription.ts`) antes de
+        cualquier scraping de texto — descarga el video con **yt-dlp**,
+        extrae solo el audio a mp3 con ffmpeg (`-x --audio-format mp3`) y lo
+        transcribe con **Whisper de OpenAI** (`gpt-4o-transcribe`, vía el SDK
+        oficial `openai`, key en `OPENAI_API_KEY`). El transcript (+
+        título/descripción si vienen) se manda al mismo pipeline de Claude
+        que ya estructuraba texto/JSON-LD. Si la descarga/transcripción
+        falla (video privado, requiere login, error de red), cae de forma
+        transparente al comportamiento anterior: oEmbed de TikTok
+        (caption), o para Instagram el mensaje de "pega el texto/caption
+        directamente" si no se pudo leer nada.
+        - **El archivo de audio descargado SIEMPRE se borra** al terminar
+          (`try/finally` en `transcribeVideoFromUrl`, con un directorio
+          temporal único por request) — no sirve de nada guardarlo, y es un
+          requisito explícito de Jorge.
+        - Tope de duración de 15 min (`MAX_DURATION_SECONDS`) y de tamaño de
+          descarga (`--max-filesize 80M`) para no dejar que un video
+          larguísimo dispare costos/tiempos de Whisper sin control — no
+          debería topar nunca con reels/TikToks normales (<3 min).
+        - **Dev local requiere `yt-dlp` instalado** (`brew install yt-dlp`,
+          ya trae ffmpeg como dependencia si no estaba). En producción el
+          `Dockerfile` instala `python3 ffmpeg yt-dlp` vía `apk` en el stage
+          `runner` (paquete `yt-dlp` existe en el repo `community` de Alpine,
+          confirmado contra la versión de Alpine que usa `node:22-alpine`
+          — no se pudo probar el build de Docker en esta máquina porque no
+          tiene Docker instalado, así que vale la pena revisar el log del
+          primer deploy en Coolify por si acaso).
       - Probado extremo a extremo con una llamada real a Claude (texto libre),
-        un fixture local de JSON-LD (URL), **y dos links reales**: un TikTok
-        (`@yomadrero`) y un Instagram reel, ambos proporcionados por Jorge.
-        - **TikTok**: funcionó — el oEmbed trajo el caption y Claude armó una
-          receta coherente ("Wrap crocante de huevo": tortilla, huevo, jamón,
-          palta), con el aviso de que solo se leyó la descripción, no el
-          audio.
-        - **Instagram**: falló como se esperaba — Instagram sirve un shell
-          casi vacío sin sesión (el contenido real vive en JS/JSON que la
-          extracción descarta), así que cae en el mensaje de "pega el
-          texto/caption directamente" en vez de la URL. No es un bug, es la
-          limitación documentada de origen; no vale la pena invertir en
-          scraping más agresivo de Instagram para un caso de uso personal.
-      - Pendiente futuro si hace falta mejor cobertura de Instagram/TikTok:
-        evaluar un servicio de transcripción de audio/video dedicado; no se
-        integró en esta pasada.
+        un fixture local de JSON-LD (URL), **y los mismos dos links reales**
+        que Jorge había dado antes (un TikTok de `@yomadrero` y un Instagram
+        reel) — esta vez sí con audio real:
+        - **TikTok**: yt-dlp descargó y extrajo el audio sin problema (no
+          necesitó login). Whisper transcribió la narración completa en
+          español y Claude armó "Wrap crocante de huevo, jamón y palta" con
+          7 ingredientes y cantidades específicas (2 huevos, 30g de jamón,
+          etc.) — mucho más rico que el caption-only de antes.
+        - **Instagram**: yt-dlp también pudo descargar el reel público sin
+          login (el bloqueo documentado antes era solo del scraping de HTML
+          sin sesión, no de yt-dlp). Salió "Tortitas de plátano macho
+          rellenas de jamón y queso" con 15 ingredientes detallados,
+          extraídos correctamente de la narración hablada.
+        - Verificado además que el directorio temporal de audio no deja
+          rastro después de cada corrida (`ls` al tmpdir, vacío).
+        - **Limitación observada, no resuelta:** en una corrida de prueba
+          aislada (no a través del flujo real de la app) yt-dlp trajo en un
+          intento el audio de fondo/música de un TikTok en vez de la
+          narración hablada — no se repitió en ninguna otra corrida
+          (incluida la que sí pasó por la app), así que parece ser un caso
+          raro de variación en qué pista de audio sirve TikTok, no un bug
+          determinístico del pipeline. Si llega a pasar, el resultado es una
+          receta con datos sin sentido — fácil de detectar al revisar antes
+          de guardar (que es justo por lo que el flujo siempre pasa por
+          `RecipeForm` para revisión manual antes de persistir).
 - [x] Vista de biblioteca de recetas con filtro por etiqueta
       (desayuno/comida/cena/almuerzo/snacks) — `src/app/recetas/page.tsx`,
       filtro vía query string (`?tag=`), sin JS necesario para filtrar
@@ -424,6 +467,7 @@ Referencia: los otros apps del proyecto "Infraestructure" (`AskMe FrontEnd`,
      proyecto/servidor que la DB)
    - `ANTHROPIC_API_KEY`
    - `KIE_API_KEY`
+   - `OPENAI_API_KEY` (transcripción de video con Whisper, ver Fase 1)
 5. Dominio: Coolify debería ofrecer algo como `nutriplus.rawcloud.net`
    automáticamente (mismo patrón que `askmef.rawcloud.net`).
 6. Deploy. La primera vez correrá `prisma migrate deploy` contra la DB de

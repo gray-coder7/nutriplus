@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { anthropic } from "@/lib/anthropic";
+import { transcribeVideoFromUrl } from "@/lib/video-transcription";
 import { IngredientCategory, MealType } from "@/generated/prisma/enums";
 import type { RecipeFormInitialValues } from "@/components/recipe-form";
 
@@ -161,7 +162,32 @@ export async function fetchUrlContent(url: string): Promise<UrlFetchResult> {
     throw new Error("Ese link no es una URL válida");
   }
 
-  if (/tiktok\.com$/.test(parsedUrl.hostname.replace(/^www\./, ""))) {
+  const hostname = parsedUrl.hostname.replace(/^www\./, "");
+  const isTikTok = /tiktok\.com$/.test(hostname);
+  const isInstagram = /instagram\.com$/.test(hostname);
+
+  if (isTikTok || isInstagram) {
+    try {
+      const { transcript, title, description } = await transcribeVideoFromUrl(url);
+      const parts = [
+        title ? `Título: ${title}` : "",
+        description ? `Descripción: ${description}` : "",
+        `Transcripción del audio del video:\n${transcript}`,
+      ].filter(Boolean);
+      const contextText = parts.join("\n\n");
+      if (contextText.length >= MIN_CONTEXT_LENGTH) {
+        return {
+          contextText,
+          warning:
+            "Generado a partir de la transcripción del audio del video. Revisa bien las cantidades y los pasos.",
+        };
+      }
+    } catch (err) {
+      console.error("No se pudo transcribir el video, usando el respaldo de solo texto:", err);
+    }
+  }
+
+  if (isTikTok) {
     const caption = await fetchTikTokCaption(url);
     if (caption && caption.length >= MIN_CONTEXT_LENGTH) {
       return {
@@ -211,7 +237,6 @@ export async function fetchUrlContent(url: string): Promise<UrlFetchResult> {
     );
   }
 
-  const isInstagram = /instagram\.com$/.test(parsedUrl.hostname.replace(/^www\./, ""));
   return {
     contextText,
     warning: isInstagram
