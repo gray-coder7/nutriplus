@@ -349,9 +349,54 @@ prueba, y revisarlas visualmente contra los mockups antes de dar el pase por
 terminado.
 
 ### Fase 7 — Deploy
-- [ ] Deploy a Coolify
+- [x] `Dockerfile` + `.dockerignore` listos (build multi-stage, corre
+      `prisma migrate deploy` antes de arrancar `next start -H 0.0.0.0`).
+- [x] `export const dynamic = "force-dynamic"` en `src/app/layout.tsx` —
+      el layout hace una query a la DB (badge de lista de super) en cada
+      render; sin esto Next intenta pre-renderizar algunas rutas en build
+      time, lo que hubiera hecho fallar el build de Docker si
+      `DATABASE_URL` no estaba disponible ahí (y de paso, congelaba datos
+      viejos en las páginas que sí lograba pre-renderizar). Verificado:
+      `npm run build` sin ningún env var presente termina bien y todas las
+      rutas quedan `ƒ Dynamic` — el build de Docker no depende de tener
+      `DATABASE_URL` ni las otras keys en build time.
+- [ ] Deploy a Coolify — **bloqueado, requiere que Jorge lo haga a mano**:
+      el MCP de Coolify conectado en este entorno es de solo lectura +
+      control de apps que ya existen (`start`/`stop`/`deploy`/logs); no
+      tiene una herramienta para *crear* una aplicación nueva ni para
+      *escribir* variables de entorno — ambas cosas solo se pueden hacer
+      desde el dashboard de Coolify. Instrucciones abajo.
 - [ ] Variables de entorno configuradas en Coolify (no en el repo)
 - [ ] Verificar conexión a la Postgres de producción
+
+#### Cómo crear la app en Coolify (manual, una sola vez)
+
+Referencia: los otros apps del proyecto "Infraestructure" (`AskMe FrontEnd`,
+`AskMe Backend`) usan el mismo patrón, así que esto debería verse igual.
+
+1. Repo en GitHub: `gray-coder7/nutriplus` (aún no tiene el código —
+   Claude no pudo hacer `git push` porque el modo automático bloqueó
+   `git remote add`/push por ser una acción sobre un remoto compartido;
+   confirmar y correr eso a mano o autorizarlo explícitamente).
+2. En Coolify: proyecto **Infraestructure** → environment **production** →
+   *New Resource* → *Application* → conectar el repo `gray-coder7/nutriplus`,
+   rama `main`.
+3. Build pack: **Dockerfile** (ya existe en la raíz del repo). Puerto
+   expuesto: **3000**.
+4. Variables de entorno (copiar los valores tal cual de `conections.md`,
+   **no** del repo — ese archivo está gitignored a propósito):
+   - `DATABASE_URL` → la connection string de Postgres de `conections.md`
+     (el host interno `b9khqscuheybdq6ll4fmx2xm` solo es alcanzable dentro
+     de la red de Coolify, por eso la app tiene que vivir en el mismo
+     proyecto/servidor que la DB)
+   - `ANTHROPIC_API_KEY`
+   - `KIE_API_KEY`
+5. Dominio: Coolify debería ofrecer algo como `nutriplus.rawcloud.net`
+   automáticamente (mismo patrón que `askmef.rawcloud.net`).
+6. Deploy. La primera vez correrá `prisma migrate deploy` contra la DB de
+   producción (crea todas las tablas desde cero, la DB está vacía).
+7. Avísame cuando esté creada (o dame el UUID) y reviso el estado del
+   deploy / logs con las herramientas de Coolify que sí tengo.
 
 ## Assets de diseño
 

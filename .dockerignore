@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.env
+.env.*
+conections.md
+design-mockups-prompt.md
+*.log
+.DS_Store
+tsconfig.tsbuildinfo
