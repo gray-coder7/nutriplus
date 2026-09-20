@@ -315,10 +315,20 @@ listas de semanas pasadas).
 - [x] Responsive / mobile-first — sidebar → tab bar inferior fijo, grids se
       apilan, formularios se apilan. La lista de super (la pantalla que más
       importa en mobile, "parado en el súper") se probó visualmente en
-      390px y se ve bien. El planeador semanal en mobile sigue siendo una
-      tabla con scroll horizontal (7 días no caben en una pantalla chica) —
-      es una limitación aceptada, no un layout mobile-nativo por día;
-      rehacerlo sería más que "pulido".
+      390px y se ve bien.
+- [x] **Planeador semanal en mobile rediseñado** (post-Fase 6, a pedido de
+      Jorge tras probarlo): la tabla con scroll horizontal se sentía mal —
+      se perdía el tab bar inferior y no se podía navegar fácil. Ahora en
+      `<640px` (`sm:hidden` en `src/app/plan/page.tsx`) se ve **un día a la
+      vez**: nav de semana compacta (« Semana / Hoy / Semana »), tira de 7
+      días recorrible tipo tarjeta (con puntito verde si ese día ya tiene
+      algo planeado, aunque no se esté viendo) y flechas prev/siguiente que
+      cruzan el límite de semana. `PlanSlot` ahora acepta `compact` (default
+      `true` para el grid denso de desktop; `false` para las tarjetas
+      grandes de la vista de un día). Desktop sigue siendo el grid completo
+      de 7 días, sin cambios. Se agregó `weekdayIndex()` a `src/lib/week.ts`
+      para calcular qué día mostrar por default (hoy, si se está viendo la
+      semana actual).
 - [x] Empty states — biblioteca y listas de super (íconos + mensaje +
       CTA, estilo mockup). Manejo de errores de APIs externas (Kie,
       Anthropic) ya existía desde Fases 1-2, solo se re-estilizó.

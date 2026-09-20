@@ -25,12 +25,17 @@ const MONTH_LABELS = [
   "dic",
 ];
 
+/** 0 = lunes ... 6 = domingo, según la semana que contiene `date`. */
+export function weekdayIndex(date: Date): number {
+  const utcMidnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const weekday = new Date(utcMidnight).getUTCDay(); // 0 = domingo ... 6 = sábado
+  return weekday === 0 ? 6 : weekday - 1;
+}
+
 /** Lunes (UTC medianoche) de la semana que contiene `date`. */
 export function mondayOf(date: Date): Date {
   const utcMidnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  const weekday = new Date(utcMidnight).getUTCDay(); // 0 = domingo ... 6 = sábado
-  const daysSinceMonday = weekday === 0 ? 6 : weekday - 1;
-  return new Date(utcMidnight - daysSinceMonday * DAY_MS);
+  return new Date(utcMidnight - weekdayIndex(date) * DAY_MS);
 }
 
 export function addWeeks(monday: Date, weeks: number): Date {
