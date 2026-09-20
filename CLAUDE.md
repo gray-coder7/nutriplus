@@ -77,8 +77,10 @@ de Kie). **Nunca** copiar esos valores a código fuente, commits, o este archivo
 - Mutaciones vía Server Actions de Next.js en vez de API routes cuando sea
   posible; usar API routes solo para llamadas externas (Kie, Anthropic) que
   necesiten ejecutarse server-side con la key protegida.
-- Nombres de tablas/columnas en `snake_case` en la base de datos, mapeados a
-  `camelCase` en Prisma/TS.
+- Tablas/columnas usan el default de Prisma: nombres de modelo/campo en
+  `camelCase` tal cual en la base de datos (sin `@map`/`@@map`) — el único
+  consumidor de la DB es Prisma, así que no hay razón para mantener un mapeo
+  extra a snake_case.
 - Sin autenticación multiusuario. Si se requiere proteger el acceso, usar un
   passcode simple por cookie/middleware — no construir un sistema de cuentas.
 - Comentarios solo cuando el *por qué* no sea obvio (ej. por qué se escala así
@@ -151,8 +153,11 @@ Reglas clave:
 ### Fase 1 — CRUD de recetas
 - [x] Modelo Prisma: `Recipe`, `Ingredient` (con `sourceType`/`sourceUrl` para
       soportar las 3 vías de alta)
-- [ ] Formulario de alta/edición **manual** de receta (nombre, descripción,
+- [x] Formulario de alta/edición **manual** de receta (nombre, descripción,
       tags de meal_type, porciones base, macros, ingredientes, instrucciones)
+      — `RecipeForm` en `src/components/recipe-form.tsx`, server actions en
+      `src/app/recetas/actions.ts`. Probado extremo a extremo (crear, editar,
+      validación de datos incompletos) contra la DB local.
 - [ ] Alta por **texto libre + IA**: textarea donde se pega una receta en
       texto suelto (ej. copiada de una nota) y Claude la estructura a
       nombre/descripción/ingredientes/instrucciones/macros estimados; el
@@ -165,9 +170,12 @@ Reglas clave:
       servicio externo de transcripción — decidir proveedor cuando se llegue
       a esta fase, probablemente reutilizando Kie API si ofrece algo, si no
       evaluar alternativas puntuales en ese momento
-- [ ] Vista de biblioteca de recetas con filtro por etiqueta
-      (desayuno/comida/cena/almuerzo/snacks)
-- [ ] Vista de detalle de receta
+- [x] Vista de biblioteca de recetas con filtro por etiqueta
+      (desayuno/comida/cena/almuerzo/snacks) — `src/app/recetas/page.tsx`,
+      filtro vía query string (`?tag=`), sin JS necesario para filtrar
+- [x] Vista de detalle de receta — `src/app/recetas/[id]/page.tsx`, incluye
+      editar/eliminar (`src/app/recetas/[id]/editar/page.tsx`,
+      `src/components/delete-recipe-button.tsx`)
 
 ### Fase 2 — Generación de imagen con IA
 - [ ] Integración con Kie API para generar imagen a partir de nombre +

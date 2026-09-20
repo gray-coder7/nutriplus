@@ -52,7 +52,8 @@ model Recipe {
   carbsGPerServing   Float
   fatGPerServing     Float
 
-  instructions String @db.Text
+  /// Pasos de preparación, en orden.
+  instructions String[]
 
   sourceType    RecipeSourceType @default(MANUAL)
   sourceUrl     String?
