@@ -229,10 +229,16 @@ retornar — **cualquier acción nueva que pueda tardar más de ~30-60s debe
 terminar en `redirect()`**, no solo revalidar y retornar.
 
 ### Fase 3 — Escalado de porciones
-- [ ] Selector de porciones en el detalle de receta
-- [ ] Recalculo en vivo de cantidades de ingredientes
-- [ ] Edición manual de ingredientes/instrucciones persistida (no solo el
-      escalado automático)
+- [x] Selector de porciones en el detalle de receta (stepper +/−, con
+      "Restablecer" cuando no coincide con las porciones base) —
+      `src/components/recipe-servings.tsx`
+- [x] Recálculo en vivo de cantidades de ingredientes — cálculo 100%
+      client-side (`quantity * servings/baseServings`), sin round-trip al
+      servidor; los macros por porción no cambian (son por porción, no por
+      receta completa)
+- [x] Edición manual de ingredientes/instrucciones persistida — ya existía
+      desde Fase 1 (`RecipeForm` / `updateRecipe`); el escalado es solo una
+      vista, no reemplaza la edición real de la receta
 
 ### Fase 4 — Planeador semanal
 - [ ] Vista de semana (lun-dom) con slots por meal_type

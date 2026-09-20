@@ -2,12 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteRecipeButton } from "@/components/delete-recipe-button";
 import { GenerateImageButton } from "@/components/generate-image-button";
+import { RecipeServings } from "@/components/recipe-servings";
 import { Button } from "@/components/ui/button";
-import {
-  INGREDIENT_CATEGORY_LABELS,
-  MEAL_TYPE_COLORS,
-  MEAL_TYPE_LABELS,
-} from "@/lib/constants";
+import { MEAL_TYPE_COLORS, MEAL_TYPE_LABELS } from "@/lib/constants";
 import { getRecipeById } from "@/lib/recipes";
 
 const MACROS = [
@@ -79,33 +76,12 @@ export default async function RecetaDetailPage({
         ))}
       </div>
 
-      <p className="mb-8 text-sm text-foreground/60">
-        Rinde <strong>{recipe.baseServings}</strong>{" "}
-        {recipe.baseServings === 1 ? "porción" : "porciones"}. Los macros de
-        arriba son por porción.
+      <p className="mb-4 text-xs text-foreground/50">
+        Los macros de arriba son por porción y no cambian al ajustar las
+        porciones — lo que se recalcula son las cantidades de ingredientes.
       </p>
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-lg font-bold">Ingredientes</h2>
-        <ul className="flex flex-col gap-1.5">
-          {recipe.ingredients.map((ingredient) => (
-            <li
-              key={ingredient.id}
-              className="flex items-center justify-between rounded-lg border border-foreground/10 px-3 py-2 text-sm"
-            >
-              <span>{ingredient.name}</span>
-              <span className="flex items-center gap-2 text-foreground/60">
-                <span>
-                  {ingredient.quantity} {ingredient.unit}
-                </span>
-                <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-xs">
-                  {INGREDIENT_CATEGORY_LABELS[ingredient.category]}
-                </span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <RecipeServings baseServings={recipe.baseServings} ingredients={recipe.ingredients} />
 
       <section className="mb-10">
         <h2 className="mb-3 text-lg font-bold">Preparación</h2>
