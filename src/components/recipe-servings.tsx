@@ -71,12 +71,23 @@ export function RecipeServings({
         </div>
       </div>
 
-      <MacroRings
-        caloriesPerServing={caloriesPerServing}
-        proteinG={proteinG}
-        carbsG={carbsG}
-        fatG={fatG}
-      />
+      <div className="sm:hidden">
+        <MacroRings
+          caloriesPerServing={caloriesPerServing}
+          proteinG={proteinG}
+          carbsG={carbsG}
+          fatG={fatG}
+          size={64}
+        />
+      </div>
+      <div className="hidden sm:block">
+        <MacroRings
+          caloriesPerServing={caloriesPerServing}
+          proteinG={proteinG}
+          carbsG={carbsG}
+          fatG={fatG}
+        />
+      </div>
 
       <div className="h-px bg-border" />
 

@@ -50,8 +50,8 @@ export default async function RecetaDetailPage({
         </div>
 
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#141e1c]/75 to-transparent" />
-        <div className="absolute bottom-7 left-5 flex flex-col gap-2.5 sm:left-10">
-          <div className="flex gap-2">
+        <div className="absolute inset-x-5 bottom-7 flex flex-col gap-2.5 sm:inset-x-10">
+          <div className="flex flex-wrap gap-2">
             {recipe.mealTypes.map((type) => (
               <span
                 key={type}

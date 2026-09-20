@@ -329,6 +329,29 @@ listas de semanas pasadas).
       de 7 días, sin cambios. Se agregó `weekdayIndex()` a `src/lib/week.ts`
       para calcular qué día mostrar por default (hoy, si se está viendo la
       semana actual).
+- [x] **Overflow horizontal en mobile corregido** (post-rediseño del
+      planeador, otro reporte de Jorge tras probarlo): tanto `/recetas/[id]`
+      como `/plan` (con recetas asignadas) obligaban a hacer scroll
+      horizontal en 390px. Dos causas distintas:
+      1. `<main>` en `src/app/layout.tsx` es un hijo `flex-1` del `<body>`
+         (que es `display:flex`) pero le faltaba `min-w-0` — el gotcha
+         clásico de Flexbox donde `min-width: auto` le impide encogerse por
+         debajo del ancho mínimo de su contenido. Sin esto, cualquier
+         elemento profundo con contenido ancho (texto largo, elementos de
+         ancho fijo) expandía TODA la página en vez de quedarse contenido.
+         Este único fix resolvió el overflow del `/plan`.
+      2. En `/recetas/[id]`, los anillos de macros (`MacroRings`, tamaño
+         fijo en px vía `style` porque necesitan el `conic-gradient`) no
+         cabían 4-en-fila en el ancho de la tarjeta en mobile. Se resolvió
+         renderizando dos variantes en `RecipeServings`
+         (`src/components/recipe-servings.tsx`): `size=64` en `sm:hidden`,
+         tamaño default (88) en `hidden sm:block` — mismo patrón de
+         desktop/mobile separados que ya se usa en `/plan`.
+      **Importante para el futuro**: los screenshots de Playwright con
+      `fullPage: true` NO revelan overflow horizontal (solo capturan alto
+      completo, el ancho se recorta al viewport) — para verificar overflow
+      horizontal hay que medir `document.documentElement.scrollWidth` vs
+      `window.innerWidth` en el navegador, no confiar en capturas.
 - [x] Empty states — biblioteca y listas de super (íconos + mensaje +
       CTA, estilo mockup). Manejo de errores de APIs externas (Kie,
       Anthropic) ya existía desde Fases 1-2, solo se re-estilizó.

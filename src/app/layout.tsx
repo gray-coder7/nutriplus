@@ -40,7 +40,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full bg-app-bg text-foreground">
         <IconSprite />
         <AppNav pendingItems={pendingItems} />
-        <main className="flex flex-1 flex-col pb-[72px] sm:pb-0">{children}</main>
+        <main className="flex min-w-0 flex-1 flex-col pb-[72px] sm:pb-0">{children}</main>
       </body>
     </html>
   );
