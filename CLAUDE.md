@@ -144,7 +144,7 @@ Reglas clave:
 - [x] Prisma 7 + adapter de Postgres, schema inicial, `prisma migrate dev`
       contra la DB local (`nutriplus_dev` en Postgres 16 de Homebrew)
 - [x] `.env` con `DATABASE_URL` (local), `ANTHROPIC_API_KEY`, `KIE_API_KEY`
-- [x] `.gitignore`, `git init` (falta el primer commit — ver abajo)
+- [x] `.gitignore`, `git init`, primer commit
 - [x] Layout base + paleta de colores/tema provisional (fitness, alegre,
       colores vivos) — se refina con los mockups de Claude Design
 
