@@ -12,6 +12,9 @@ export function listRecipes(mealTypes: MealType[] = []) {
 export function getRecipeById(id: string) {
   return prisma.recipe.findUnique({
     where: { id },
-    include: { ingredients: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      ingredients: { orderBy: { sortOrder: "asc" } },
+      image: { select: { updatedAt: true } },
+    },
   });
 }

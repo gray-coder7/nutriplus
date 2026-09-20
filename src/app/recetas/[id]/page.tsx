@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteRecipeButton } from "@/components/delete-recipe-button";
+import { GenerateImageButton } from "@/components/generate-image-button";
 import { Button } from "@/components/ui/button";
 import {
   INGREDIENT_CATEGORY_LABELS,
@@ -27,16 +28,29 @@ export default async function RecetaDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-12">
-      <div className="mb-6 flex h-56 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sun/30 via-coral/20 to-turquoise/20">
+      <div className="relative mb-6 flex h-56 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sun/30 via-coral/20 to-turquoise/20">
         {recipe.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={recipe.imageUrl}
-            alt={recipe.name}
-            className="h-full w-full object-cover"
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={recipe.image?.updatedAt.getTime()}
+              src={
+                recipe.image
+                  ? `${recipe.imageUrl}?v=${recipe.image.updatedAt.getTime()}`
+                  : recipe.imageUrl
+              }
+              alt={recipe.name}
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute bottom-3 right-3">
+              <GenerateImageButton recipeId={recipe.id} hasImage />
+            </div>
+          </>
         ) : (
-          <span className="text-6xl">🥗</span>
+          <div className="flex flex-col items-center gap-3">
+            <span className="text-6xl">🥗</span>
+            <GenerateImageButton recipeId={recipe.id} hasImage={false} />
+          </div>
         )}
       </div>
 

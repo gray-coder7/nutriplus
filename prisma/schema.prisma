@@ -43,6 +43,8 @@ model Recipe {
   description String     @db.Text
   mealTypes   MealType[]
 
+  /// Ruta interna (/api/recipe-images/[id]) una vez generada la imagen, no
+  /// la URL externa de Kie (esa expira).
   imageUrl    String?
   imagePrompt String?    @db.Text
 
@@ -61,6 +63,22 @@ model Recipe {
 
   ingredients   Ingredient[]
   mealPlanItems MealPlanItem[]
+  image         RecipeImage?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Los bytes de la imagen viven en la DB (no en el filesystem del contenedor)
+/// porque las URLs que da Kie expiran ~24h y Coolify no garantiza disco
+/// persistente entre deploys. Se sirven via /api/recipe-images/[id].
+model RecipeImage {
+  id       String @id @default(cuid())
+  recipeId String @unique
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  data     Bytes
+  mimeType String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -85,6 +85,11 @@ de Kie). **Nunca** copiar esos valores a código fuente, commits, o este archivo
   passcode simple por cookie/middleware — no construir un sistema de cuentas.
 - Comentarios solo cuando el *por qué* no sea obvio (ej. por qué se escala así
   una cantidad, por qué se agrupan ciertos ingredientes en la lista de super).
+- **Toda Server Action que pueda tardar más de ~30-60s (generación con IA,
+  llamadas externas lentas) debe terminar en `redirect()`**, nunca solo
+  `revalidatePath()` + return. Ver la nota en Fase 2 — probado que una acción
+  sin `redirect()` se queda sin responder pasado ~1 min cuando el request usa
+  el fallback de formulario sin JS.
 
 ## Modelo de datos
 
@@ -193,11 +198,35 @@ Reglas clave:
       `src/components/delete-recipe-button.tsx`)
 
 ### Fase 2 — Generación de imagen con IA
-- [ ] Integración con Kie API para generar imagen a partir de nombre +
-      descripción de la receta
-- [ ] (Opcional) Usar Anthropic para redactar un buen prompt de imagen antes
-      de mandarlo a Kie
-- [ ] Botón "regenerar imagen" en el detalle de receta
+- [x] Integración con Kie API (`src/lib/kie.ts`) — modelo `4o-image-api` via
+      `POST /jobs/createTask` + polling de `GET /jobs/recordInfo` hasta
+      `state: success`. Cada fetch tiene su propio timeout (no solo un
+      deadline global) para no depender de una sola llamada lenta.
+- [x] Anthropic redacta el prompt de imagen antes de mandarlo a Kie
+      (`src/lib/recipe-image-prompt.ts`, `claude-opus-5`) — asegura que todas
+      las imágenes mantengan el mismo estilo de fotografía de comida
+      vibrante/apetitosa de la app, en vez de depender de lo que el usuario
+      haya escrito en la descripción.
+- [x] Botón "generar/regenerar imagen" en el detalle de receta
+      (`src/components/generate-image-button.tsx`)
+- [x] **Los bytes de la imagen se guardan en Postgres** (`RecipeImage`,
+      modelo separado 1:1 con `Recipe`), no en el filesystem — las URLs que
+      da Kie expiran ~24h y Coolify no garantiza disco persistente. Se sirven
+      via `GET /api/recipe-images/[id]` (`src/app/api/recipe-images/[id]/route.ts`).
+- [x] Probado extremo a extremo con una generación real (Claude + Kie +
+      Postgres): ~70-90s por imagen, resultado visualmente excelente.
+
+**Hallazgo importante (afecta cualquier Server Action futura que tarde
+mucho):** un Server Action que **no** hace `redirect()` y tarda más de ~1
+minuto se queda sin responder cuando el request no trae JS habilitado (el
+fallback de formulario progresivo de Next) — probado exhaustivamente en dev
+y producción, con y sin `revalidatePath`, con distintos clientes HTTP,
+incluso con una acción de prueba que solo hacía `sleep`. La única acción
+"sin lógica" que sí respondió de forma confiable fue una que terminaba en
+`redirect()`. Por eso `generateRecipeImage` termina con
+`redirect(\`/recetas/\${recipeId}\`)` en vez de solo `revalidatePath` +
+retornar — **cualquier acción nueva que pueda tardar más de ~30-60s debe
+terminar en `redirect()`**, no solo revalidar y retornar.
 
 ### Fase 3 — Escalado de porciones
 - [ ] Selector de porciones en el detalle de receta
