@@ -35,9 +35,14 @@ export default async function RecetasPage({
     <div className="mx-auto w-full max-w-5xl px-6 py-12">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Recetas</h1>
-        <Link href="/recetas/nueva">
-          <Button>+ Nueva receta</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/recetas/importar">
+            <Button variant="secondary">✨ Importar con IA</Button>
+          </Link>
+          <Link href="/recetas/nueva">
+            <Button>+ Nueva receta</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mb-8 flex flex-wrap gap-2">

@@ -2,7 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { recipeFormSchema } from "@/lib/recipe-schema";
+import { recipeFormSchema, recipeSourceSchema } from "@/lib/recipe-schema";
+import { extractRecipeFromText, fetchUrlContent } from "@/lib/recipe-extraction";
+import { RecipeSourceType } from "@/generated/prisma/enums";
+import type { RecipeFormInitialValues } from "@/components/recipe-form";
 
 export type RecipeActionState = { error: string } | undefined;
 
@@ -49,6 +52,12 @@ export async function createRecipe(
     return { error: parsed.error.issues[0]?.message ?? "Revisa los datos de la receta" };
   }
 
+  const source = recipeSourceSchema.parse({
+    sourceType: formData.get("sourceType") ?? undefined,
+    sourceUrl: formData.get("sourceUrl") ?? undefined,
+    sourceRawText: formData.get("sourceRawText") ?? undefined,
+  });
+
   const recipe = await prisma.recipe.create({
     data: {
       name: parsed.data.name,
@@ -60,6 +69,9 @@ export async function createRecipe(
       carbsGPerServing: parsed.data.carbsGPerServing,
       fatGPerServing: parsed.data.fatGPerServing,
       instructions: parsed.data.instructions,
+      sourceType: source.sourceType,
+      sourceUrl: source.sourceUrl,
+      sourceRawText: source.sourceRawText,
       ingredients: {
         create: parsed.data.ingredients.map((ingredient, index) => ({
           ...ingredient,
@@ -112,4 +124,67 @@ export async function updateRecipe(
 export async function deleteRecipe(id: string): Promise<void> {
   await prisma.recipe.delete({ where: { id } });
   redirect("/recetas");
+}
+
+export type ImportActionState =
+  | { status: "error"; error: string }
+  | {
+      status: "success";
+      values: RecipeFormInitialValues;
+      sourceType: RecipeSourceType;
+      sourceUrl?: string;
+      sourceRawText: string;
+      warning?: string;
+    }
+  | undefined;
+
+export async function extractRecipe(
+  _prevState: ImportActionState,
+  formData: FormData,
+): Promise<ImportActionState> {
+  const mode = formData.get("mode");
+
+  try {
+    let contextText: string;
+    let sourceType: RecipeSourceType;
+    let sourceUrl: string | undefined;
+    let warning: string | undefined;
+
+    if (mode === "url") {
+      const url = String(formData.get("url") ?? "").trim();
+      if (!url) return { status: "error", error: "Pega un link para continuar" };
+
+      const result = await fetchUrlContent(url);
+      contextText = result.contextText;
+      warning = result.warning;
+      sourceType = RecipeSourceType.URL_IMPORT;
+      sourceUrl = url;
+    } else {
+      const rawText = String(formData.get("rawText") ?? "").trim();
+      if (rawText.length < 20) {
+        return { status: "error", error: "Pega el texto completo de la receta" };
+      }
+      contextText = rawText;
+      sourceType = RecipeSourceType.TEXT_IMPORT;
+    }
+
+    const values = await extractRecipeFromText(contextText);
+
+    return {
+      status: "success",
+      values,
+      sourceType,
+      sourceUrl,
+      sourceRawText: contextText,
+      warning,
+    };
+  } catch (err) {
+    return {
+      status: "error",
+      error:
+        err instanceof Error
+          ? err.message
+          : "No se pudo procesar la receta, intenta de nuevo",
+    };
+  }
 }

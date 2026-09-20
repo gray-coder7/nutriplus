@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { IngredientCategory, MealType } from "@/generated/prisma/enums";
+import { IngredientCategory, MealType, RecipeSourceType } from "@/generated/prisma/enums";
 
 export const ingredientSchema = z.object({
   name: z.string().trim().min(1, "Falta el nombre del ingrediente"),
@@ -26,3 +26,17 @@ export const recipeFormSchema = z.object({
 });
 
 export type RecipeFormValues = z.infer<typeof recipeFormSchema>;
+
+export const recipeSourceSchema = z.object({
+  sourceType: z.enum(RecipeSourceType).default(RecipeSourceType.MANUAL),
+  sourceUrl: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+  sourceRawText: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+});

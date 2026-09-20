@@ -158,18 +158,33 @@ Reglas clave:
       — `RecipeForm` en `src/components/recipe-form.tsx`, server actions en
       `src/app/recetas/actions.ts`. Probado extremo a extremo (crear, editar,
       validación de datos incompletos) contra la DB local.
-- [ ] Alta por **texto libre + IA**: textarea donde se pega una receta en
-      texto suelto (ej. copiada de una nota) y Claude la estructura a
-      nombre/descripción/ingredientes/instrucciones/macros estimados; el
-      resultado se muestra editable antes de guardar (nunca se guarda directo)
-- [ ] Alta por **URL** (sitio de recetas / Instagram / TikTok): se pega el
-      link, el backend intenta obtener el contenido (texto de la página,
-      caption/transcripción del video cuando sea posible) y se manda a Claude
-      con el mismo flujo de estructuración + edición manual antes de guardar.
-      Nota: la extracción de video de Instagram/TikTok puede requerir un
-      servicio externo de transcripción — decidir proveedor cuando se llegue
-      a esta fase, probablemente reutilizando Kie API si ofrece algo, si no
-      evaluar alternativas puntuales en ese momento
+- [x] Alta por **texto libre + IA** y **URL** — `/recetas/importar`
+      (`src/app/recetas/importar/page.tsx`). Un solo flujo en dos fases:
+      1. `extractRecipe` (`src/app/recetas/actions.ts`) recibe texto pegado o
+         una URL, arma un "contexto" de texto (ver `fetchUrlContent` en
+         `src/lib/recipe-extraction.ts`) y llama a Claude
+         (`claude-opus-5`, `client.messages.parse` con `zodOutputFormat`)
+         para estructurarlo en el mismo shape que usa `RecipeForm`.
+      2. El resultado se muestra en `RecipeForm` pre-llenado (con banner de
+         aviso) para revisar/editar antes de guardar — nunca se guarda
+         directo. `sourceType`/`sourceUrl`/`sourceRawText` viajan como campos
+         ocultos hasta `createRecipe`.
+      - **Extracción de URL** (`fetchUrlContent`): primero intenta JSON-LD
+        `schema.org/Recipe` (dato estructurado, el más confiable, típico en
+        sitios de recetas); si no hay, cae a `og:description` + texto plano
+        de la página. Para TikTok usa el endpoint público de oEmbed
+        (caption del video, no hay transcripción de audio). Instagram no
+        tiene una vía confiable sin login — si la extracción da muy poco
+        contenido, se le pide al usuario pegar el texto/caption directamente
+        en vez de la URL.
+      - Probado extremo a extremo con una llamada real a Claude (texto libre)
+        y con un fixture local de JSON-LD (URL) — ambos casos guardaron
+        correctamente. El oEmbed de TikTok no se probó contra un video real
+        (requiere una URL pública real) — validar con un link real cuando se
+        use por primera vez.
+      - Pendiente futuro si hace falta mejor cobertura de Instagram/TikTok:
+        evaluar un servicio de transcripción de audio/video dedicado; no se
+        integró en esta pasada.
 - [x] Vista de biblioteca de recetas con filtro por etiqueta
       (desayuno/comida/cena/almuerzo/snacks) — `src/app/recetas/page.tsx`,
       filtro vía query string (`?tag=`), sin JS necesario para filtrar
