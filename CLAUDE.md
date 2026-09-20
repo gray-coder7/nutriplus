@@ -182,11 +182,19 @@ Reglas clave:
         tiene una vía confiable sin login — si la extracción da muy poco
         contenido, se le pide al usuario pegar el texto/caption directamente
         en vez de la URL.
-      - Probado extremo a extremo con una llamada real a Claude (texto libre)
-        y con un fixture local de JSON-LD (URL) — ambos casos guardaron
-        correctamente. El oEmbed de TikTok no se probó contra un video real
-        (requiere una URL pública real) — validar con un link real cuando se
-        use por primera vez.
+      - Probado extremo a extremo con una llamada real a Claude (texto libre),
+        un fixture local de JSON-LD (URL), **y dos links reales**: un TikTok
+        (`@yomadrero`) y un Instagram reel, ambos proporcionados por Jorge.
+        - **TikTok**: funcionó — el oEmbed trajo el caption y Claude armó una
+          receta coherente ("Wrap crocante de huevo": tortilla, huevo, jamón,
+          palta), con el aviso de que solo se leyó la descripción, no el
+          audio.
+        - **Instagram**: falló como se esperaba — Instagram sirve un shell
+          casi vacío sin sesión (el contenido real vive en JS/JSON que la
+          extracción descarta), así que cae en el mensaje de "pega el
+          texto/caption directamente" en vez de la URL. No es un bug, es la
+          limitación documentada de origen; no vale la pena invertir en
+          scraping más agresivo de Instagram para un caso de uso personal.
       - Pendiente futuro si hace falta mejor cobertura de Instagram/TikTok:
         evaluar un servicio de transcripción de audio/video dedicado; no se
         integró en esta pasada.
