@@ -1,11 +1,13 @@
 import { IngredientCategory, MealType } from "@/generated/prisma/enums";
 
+/// Orden cronológico del día (desayuno -> almuerzo -> comida -> snack -> cena),
+/// usado en filtros, formularios y el planeador semanal.
 export const MEAL_TYPE_ORDER: MealType[] = [
   MealType.BREAKFAST,
-  MealType.LUNCH,
-  MealType.DINNER,
   MealType.BRUNCH,
+  MealType.LUNCH,
   MealType.SNACK,
+  MealType.DINNER,
 ];
 
 export const MEAL_TYPE_LABELS: Record<MealType, string> = {

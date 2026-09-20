@@ -241,9 +241,29 @@ terminar en `redirect()`**, no solo revalidar y retornar.
       vista, no reemplaza la edición real de la receta
 
 ### Fase 4 — Planeador semanal
-- [ ] Vista de semana (lun-dom) con slots por meal_type
-- [ ] Agregar receta a un slot + definir porciones
-- [ ] Guardar/cargar planes semanales
+- [x] Vista de semana (lun-dom) con slots por meal_type — `/plan`
+      (`src/app/plan/page.tsx`), filas en orden cronológico del día
+      (desayuno → almuerzo → comida → snack → cena, ver
+      `MEAL_TYPE_ORDER` en `src/lib/constants.ts`), navegación
+      anterior/siguiente/hoy vía `?week=YYYY-MM-DD`
+- [x] Agregar receta a un slot + definir porciones — cada slot es un mini
+      formulario (`src/components/plan-slot.tsx`) con `<select>` de recetas
+      (agrupadas: las que ya traen esa etiqueta de comida primero) + cantidad
+      de porciones; sin JS necesario (progressive enhancement, igual que el
+      resto de la app). Un slot puede tener más de una receta.
+- [x] Guardar/cargar planes semanales — `MealPlan` se crea perezosamente (al
+      primer `assignMealPlanItem` de esa semana, no al visitar la página) via
+      `getOrCreateMealPlan`; `weekStartDate` es `@unique` y siempre se
+      normaliza a medianoche UTC del lunes (`src/lib/week.ts`) para evitar
+      duplicados. Probado extremo a extremo: asignar, mostrar, quitar,
+      navegar entre semanas.
+
+**Limitación conocida (aceptable para MVP):** "la semana actual" por default
+se calcula con fecha UTC del servidor, no con la zona horaria real del
+usuario — cerca de medianoche local puede mostrar la semana equivocada por
+default. Se resuelve navegando manualmente con los links de
+anterior/siguiente; no se resolvió con detección de zona horaria porque
+requeriría un client component solo para eso.
 
 ### Fase 5 — Lista de super
 - [ ] Generar lista consolidada a partir del plan semanal

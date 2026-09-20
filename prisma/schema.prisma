@@ -102,7 +102,8 @@ model Ingredient {
 model MealPlan {
   id            String   @id @default(cuid())
   name          String?
-  weekStartDate DateTime
+  /// Siempre normalizado a medianoche UTC del lunes de esa semana.
+  weekStartDate DateTime @unique
 
   items         MealPlanItem[]
   shoppingLists ShoppingList[]
