@@ -8,12 +8,18 @@ export function RecipeCard({
   name,
   mealTypes,
   caloriesPerServing,
+  proteinGPerServing,
+  carbsGPerServing,
+  fatGPerServing,
   imageUrl,
 }: {
   id: string;
   name: string;
   mealTypes: MealType[];
   caloriesPerServing: number;
+  proteinGPerServing: number;
+  carbsGPerServing: number;
+  fatGPerServing: number;
   imageUrl: string | null;
 }) {
   return (
@@ -45,9 +51,20 @@ export function RecipeCard({
         <h3 className="font-display text-base font-semibold text-ink group-hover:text-coral-dark">
           {name}
         </h3>
-        <div className="mt-auto flex items-center gap-1.5 text-xs font-semibold text-ink-soft">
-          <Icon name="flame" size={13} />
-          {caloriesPerServing} kcal
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-ink-soft">
+          <span className="flex items-center gap-1.5">
+            <Icon name="flame" size={13} />
+            {caloriesPerServing} kcal
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-berry" />P {proteinGPerServing}g
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-aqua" />C {carbsGPerServing}g
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-sun" />G {fatGPerServing}g
+          </span>
         </div>
       </div>
     </Link>

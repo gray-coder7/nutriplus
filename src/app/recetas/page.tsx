@@ -127,6 +127,9 @@ export default async function RecetasPage({
               name={recipe.name}
               mealTypes={recipe.mealTypes}
               caloriesPerServing={recipe.caloriesPerServing}
+              proteinGPerServing={recipe.proteinGPerServing}
+              carbsGPerServing={recipe.carbsGPerServing}
+              fatGPerServing={recipe.fatGPerServing}
               imageUrl={recipe.imageUrl}
             />
           ))}
