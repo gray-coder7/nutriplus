@@ -266,10 +266,27 @@ anterior/siguiente; no se resolvió con detección de zona horaria porque
 requeriría un client component solo para eso.
 
 ### Fase 5 — Lista de super
-- [ ] Generar lista consolidada a partir del plan semanal
-- [ ] Agrupar por categoría de ingrediente
-- [ ] Checkboxes para marcar comprado (con tachado visual), persistidos en BD
-- [ ] Permitir agregar ítems manuales a la lista
+- [x] Generar lista consolidada a partir del plan semanal — botón en `/plan`
+      (o "Regenerar" en la lista misma) llama a `generateOrRegenerateShoppingList`
+      (`src/app/listas/actions.ts`), que suma ingredientes de todas las
+      recetas del plan escalados por `servings/baseServings` de cada item
+      (`buildConsolidatedItems` en `src/lib/shopping-list.ts`). Regenerar
+      conserva los ítems agregados a mano (solo se borran los que vienen de
+      receta, filtrando por `sourceRecipeIds` no vacío).
+- [x] Agrupar por categoría de ingrediente — `/listas/[id]`
+      (`src/components/shopping-list-checklist.tsx`), orden de
+      `INGREDIENT_CATEGORY_ORDER`
+- [x] Checkboxes para marcar comprado (tachado + opacidad), persistidos en BD
+      — único pedazo de la app con UI optimista (`useOptimistic` +
+      `useTransition`) porque es la pantalla que se usa parada en el súper:
+      no puede sentirse como un recarga de página por cada tap. El resto de
+      la app usa el patrón normal de redirect tras server action.
+- [x] Permitir agregar ítems manuales a la lista — formulario simple al final
+      de `/listas/[id]`, con categoría opcional (default OTHER)
+
+También se agregó `/listas` como índice de todas las listas generadas (no
+estaba en el checklist original, pero es la forma natural de volver a ver
+listas de semanas pasadas).
 
 ### Fase 6 — Pulido
 - [ ] Responsive / mobile-first (la lista de super se usa desde el súper, en
@@ -287,3 +304,21 @@ requeriría un client component solo para eso.
 Ver [`design-mockups-prompt.md`](./design-mockups-prompt.md): prompt listo
 para usar en Claude Design y generar los mockups de todas las pantallas antes
 de implementar la UI.
+
+**Mockups ya generados** (Claude Design, canvas con las 7 pantallas en
+desktop + mobile más una guía de estilo): https://claude.ai/artifact/361RvDSm4Bbxxcvcpve2jH
+
+Resumen del sistema de diseño real (fuente de verdad para Fase 6 — reemplaza
+la paleta/tipografía provisional usada en Fases 0-5):
+- Tipografía: **Fredoka** (títulos, 500/600/700) + **Manrope** (cuerpo,
+  400-800), vía Google Fonts.
+- Paleta: Coral `#FF6A3D` (primario), Lima `#8CC63F`, Aqua `#21C7B8`,
+  Sol `#FFC633`, Berry `#E14F82` (acentos); Ink `#2B2A28` (texto),
+  `#6B6862` (texto secundario), `#EAE7E0` (borde), `#F6F5F0` (fondo app),
+  blanco (superficie).
+- Botones tipo pill (`border-radius: 999px`), tags de comida con punto de
+  color + texto, cards de receta con imagen 4:3 y sombra suave, anillos de
+  macros (conic-gradient) en el detalle de receta, checkboxes cuadrados
+  custom (no el checkbox nativo del navegador) en la lista de super.
+- Layout con sidebar de navegación a la izquierda (no un header horizontal
+  como el provisional actual).

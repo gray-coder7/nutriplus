@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { INGREDIENT_CATEGORY_LABELS } from "@/lib/constants";
+import { formatQuantity } from "@/lib/format";
 import type { IngredientCategory } from "@/generated/prisma/enums";
 
 type IngredientItem = {
@@ -12,12 +13,6 @@ type IngredientItem = {
   unit: string;
   category: IngredientCategory;
 };
-
-function formatQuantity(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  if (Number.isInteger(rounded)) return String(rounded);
-  return rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-}
 
 export function RecipeServings({
   baseServings,

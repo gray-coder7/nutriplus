@@ -37,6 +37,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/plan" className="hover:text-foreground">
                 Plan semanal
               </Link>
+              <Link href="/listas" className="hover:text-foreground">
+                Listas
+              </Link>
             </nav>
           </div>
         </header>

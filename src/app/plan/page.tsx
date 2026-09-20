@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { generateOrRegenerateShoppingList } from "@/app/listas/actions";
 import { PlanSlot } from "@/components/plan-slot";
+import { Button } from "@/components/ui/button";
 import { MEAL_TYPE_LABELS, MEAL_TYPE_ORDER } from "@/lib/constants";
 import { getMealPlanForWeek, type MealPlanItemWithRecipe } from "@/lib/meal-plans";
 import { listRecipes } from "@/lib/recipes";
+import { getShoppingListForMealPlan } from "@/lib/shopping-list";
 import {
   WEEKDAY_LABELS,
   addDays,
@@ -25,6 +28,8 @@ export default async function PlanPage({
     getMealPlanForWeek(weekStartDate),
     listRecipes(),
   ]);
+
+  const existingShoppingList = mealPlan ? await getShoppingListForMealPlan(mealPlan.id) : null;
 
   const itemsBySlot = new Map<string, MealPlanItemWithRecipe[]>();
   for (const item of mealPlan?.items ?? []) {
@@ -68,9 +73,24 @@ export default async function PlanPage({
       </div>
 
       <p className="mb-1 text-foreground/70">{formatWeekRangeLabel(weekStartDate)}</p>
-      <p className="mb-8 text-sm text-foreground/50">
-        {plannedSlots} de {totalSlots} comidas planeadas esta semana
-      </p>
+      <div className="mb-8 flex flex-wrap items-center gap-3">
+        <p className="text-sm text-foreground/50">
+          {plannedSlots} de {totalSlots} comidas planeadas esta semana
+        </p>
+        {mealPlan && plannedSlots > 0 && (
+          <>
+            {existingShoppingList ? (
+              <Link href={`/listas/${existingShoppingList.id}`}>
+                <Button variant="secondary">🛒 Ver lista de súper</Button>
+              </Link>
+            ) : (
+              <form action={generateOrRegenerateShoppingList.bind(null, mealPlan.id)}>
+                <Button type="submit">🛒 Generar lista de súper</Button>
+              </form>
+            )}
+          </>
+        )}
+      </div>
 
       {recipes.length === 0 && (
         <div className="mb-6 rounded-xl bg-sun/15 px-4 py-3 text-sm">
