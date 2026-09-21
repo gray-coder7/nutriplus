@@ -131,6 +131,7 @@ export default async function RecetasPage({
               carbsGPerServing={recipe.carbsGPerServing}
               fatGPerServing={recipe.fatGPerServing}
               imageUrl={recipe.imageUrl}
+              imageVersion={recipe.image?.updatedAt.getTime()}
             />
           ))}
         </div>

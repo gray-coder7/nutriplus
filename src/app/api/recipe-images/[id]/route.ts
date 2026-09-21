@@ -19,7 +19,11 @@ export async function GET(
   return new NextResponse(image.data, {
     headers: {
       "Content-Type": image.mimeType,
-      "Cache-Control": "private, max-age=60",
+      // Seguro como "immutable": toda referencia a esta ruta incluye un
+      // ?v=<updatedAt> como cache-buster (ver recipe-card.tsx y el hero de
+      // /recetas/[id]), así que una imagen regenerada simplemente cambia de
+      // URL en vez de invalidar esta.
+      "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
 }

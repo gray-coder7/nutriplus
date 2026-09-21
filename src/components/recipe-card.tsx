@@ -12,6 +12,7 @@ export function RecipeCard({
   carbsGPerServing,
   fatGPerServing,
   imageUrl,
+  imageVersion,
 }: {
   id: string;
   name: string;
@@ -21,6 +22,7 @@ export function RecipeCard({
   carbsGPerServing: number;
   fatGPerServing: number;
   imageUrl: string | null;
+  imageVersion?: number;
 }) {
   return (
     <Link
@@ -32,7 +34,11 @@ export function RecipeCard({
       >
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+          <img
+            src={imageVersion ? `${imageUrl}?v=${imageVersion}` : imageUrl}
+            alt={name}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <Icon name="food" size={40} className="text-white/55" />
         )}

@@ -53,8 +53,6 @@ export function RecipeForm({
   action,
   initialValues,
   submitLabel,
-  sourceMeta,
-  banner,
 }: {
   action: (
     prevState: RecipeActionState,
@@ -62,8 +60,6 @@ export function RecipeForm({
   ) => Promise<RecipeActionState>;
   initialValues?: RecipeFormInitialValues;
   submitLabel: string;
-  sourceMeta?: { sourceType: string; sourceUrl?: string; sourceRawText?: string };
-  banner?: React.ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const idPrefix = useId();
@@ -123,18 +119,6 @@ export function RecipeForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-9">
-      {sourceMeta && (
-        <>
-          <input type="hidden" name="sourceType" value={sourceMeta.sourceType} />
-          {sourceMeta.sourceUrl && (
-            <input type="hidden" name="sourceUrl" value={sourceMeta.sourceUrl} />
-          )}
-          {sourceMeta.sourceRawText && (
-            <input type="hidden" name="sourceRawText" value={sourceMeta.sourceRawText} />
-          )}
-        </>
-      )}
-      {banner}
       <section className="flex flex-col gap-5">
         <div>
           <Label htmlFor="name">Nombre de la receta</Label>

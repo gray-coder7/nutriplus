@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { addManualItem, generateOrRegenerateShoppingList } from "@/app/listas/actions";
+import {
+  addManualItem,
+  generateOrRegenerateShoppingList,
+  setShoppingListCompleted,
+} from "@/app/listas/actions";
+import { DeleteShoppingListButton } from "@/components/delete-shopping-list-button";
 import { Icon } from "@/components/icon-sprite";
 import { ShoppingListChecklist } from "@/components/shopping-list-checklist";
 import { Button } from "@/components/ui/button";
@@ -20,19 +25,36 @@ export default async function ShoppingListPage({
 
   const total = list.items.length;
   const checked = list.items.filter((item) => item.isChecked).length;
+  const isCompleted = !!list.completedAt;
 
   return (
     <div className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-10 sm:py-11">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[28px] font-semibold">Lista de súper</h1>
-        {list.mealPlanId && (
-          <form action={generateOrRegenerateShoppingList.bind(null, list.mealPlanId)}>
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-[28px] font-semibold">Lista de súper</h1>
+          {isCompleted && (
+            <span className="w-fit rounded-full bg-lime-tint px-3 py-1 text-xs font-bold text-lime-dark">
+              Completada
+            </span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {list.mealPlanId && (
+            <form action={generateOrRegenerateShoppingList.bind(null, list.mealPlanId)}>
+              <Button type="submit" variant="secondary">
+                <Icon name="sparkles" size={16} />
+                Regenerar desde el plan
+              </Button>
+            </form>
+          )}
+          <form action={setShoppingListCompleted.bind(null, list.id, !isCompleted)}>
             <Button type="submit" variant="secondary">
-              <Icon name="sparkles" size={16} />
-              Regenerar desde el plan
+              {!isCompleted && <Icon name="check" size={16} />}
+              {isCompleted ? "Reabrir" : "Marcar como completada"}
             </Button>
           </form>
-        )}
+          <DeleteShoppingListButton id={list.id} />
+        </div>
       </div>
 
       <p className="mb-8 text-sm text-ink-soft">

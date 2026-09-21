@@ -89,3 +89,21 @@ export async function removeShoppingListItem(
   await prisma.shoppingListItem.delete({ where: { id: itemId } });
   redirect(`/listas/${shoppingListId}`);
 }
+
+export async function setShoppingListCompleted(
+  id: string,
+  completed: boolean,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  formData: FormData,
+): Promise<void> {
+  await prisma.shoppingList.update({
+    where: { id },
+    data: { completedAt: completed ? new Date() : null },
+  });
+  redirect(`/listas/${id}`);
+}
+
+export async function deleteShoppingList(id: string): Promise<void> {
+  await prisma.shoppingList.delete({ where: { id } });
+  redirect("/listas");
+}

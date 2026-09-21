@@ -1,11 +1,11 @@
 "use server";
 
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { recipeFormSchema, recipeSourceSchema } from "@/lib/recipe-schema";
-import { extractRecipeFromText, fetchUrlContent } from "@/lib/recipe-extraction";
+import { processRecipeImport } from "@/lib/recipe-import";
 import { RecipeSourceType } from "@/generated/prisma/enums";
-import type { RecipeFormInitialValues } from "@/components/recipe-form";
 
 export type RecipeActionState = { error: string } | undefined;
 
@@ -126,65 +126,63 @@ export async function deleteRecipe(id: string): Promise<void> {
   redirect("/recetas");
 }
 
-export type ImportActionState =
-  | { status: "error"; error: string }
-  | {
-      status: "success";
-      values: RecipeFormInitialValues;
-      sourceType: RecipeSourceType;
-      sourceUrl?: string;
-      sourceRawText: string;
-      warning?: string;
-    }
-  | undefined;
+export type ImportActionState = { error: string } | undefined;
 
-export async function extractRecipe(
+function createImportPlaceholder(
+  source: { sourceType: RecipeSourceType; sourceUrl?: string; sourceRawText?: string },
+) {
+  return prisma.recipe.create({
+    data: {
+      name: "Importando receta…",
+      description: "",
+      mealTypes: [],
+      baseServings: 1,
+      caloriesPerServing: 0,
+      proteinGPerServing: 0,
+      carbsGPerServing: 0,
+      fatGPerServing: 0,
+      instructions: [],
+      importStatus: "PROCESSING",
+      ...source,
+    },
+  });
+}
+
+/**
+ * Crea de inmediato un Recipe placeholder (importStatus: PROCESSING) y
+ * redirige a su detalle; la extracción con IA (y, si sale bien, la
+ * generación de imagen) corren después en segundo plano via
+ * processRecipeImport (ver src/lib/recipe-import.ts) para que no dependan
+ * del tab/conexión del navegador y para que la receta se guarde sola, sin
+ * paso de revisión manual.
+ */
+export async function importRecipe(
   _prevState: ImportActionState,
   formData: FormData,
 ): Promise<ImportActionState> {
   const mode = formData.get("mode");
 
-  try {
-    let contextText: string;
-    let sourceType: RecipeSourceType;
-    let sourceUrl: string | undefined;
-    let warning: string | undefined;
+  if (mode === "url") {
+    const url = String(formData.get("url") ?? "").trim();
+    if (!url) return { error: "Pega un link para continuar" };
 
-    if (mode === "url") {
-      const url = String(formData.get("url") ?? "").trim();
-      if (!url) return { status: "error", error: "Pega un link para continuar" };
-
-      const result = await fetchUrlContent(url);
-      contextText = result.contextText;
-      warning = result.warning;
-      sourceType = RecipeSourceType.URL_IMPORT;
-      sourceUrl = url;
-    } else {
-      const rawText = String(formData.get("rawText") ?? "").trim();
-      if (rawText.length < 20) {
-        return { status: "error", error: "Pega el texto completo de la receta" };
-      }
-      contextText = rawText;
-      sourceType = RecipeSourceType.TEXT_IMPORT;
-    }
-
-    const values = await extractRecipeFromText(contextText);
-
-    return {
-      status: "success",
-      values,
-      sourceType,
-      sourceUrl,
-      sourceRawText: contextText,
-      warning,
-    };
-  } catch (err) {
-    return {
-      status: "error",
-      error:
-        err instanceof Error
-          ? err.message
-          : "No se pudo procesar la receta, intenta de nuevo",
-    };
+    const recipe = await createImportPlaceholder({
+      sourceType: RecipeSourceType.URL_IMPORT,
+      sourceUrl: url,
+    });
+    after(() => processRecipeImport(recipe.id, { mode: "url", url }));
+    redirect(`/recetas/${recipe.id}`);
   }
+
+  const rawText = String(formData.get("rawText") ?? "").trim();
+  if (rawText.length < 20) {
+    return { error: "Pega el texto completo de la receta" };
+  }
+
+  const recipe = await createImportPlaceholder({
+    sourceType: RecipeSourceType.TEXT_IMPORT,
+    sourceRawText: rawText,
+  });
+  after(() => processRecipeImport(recipe.id, { mode: "text", rawText }));
+  redirect(`/recetas/${recipe.id}`);
 }

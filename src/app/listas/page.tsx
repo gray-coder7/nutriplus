@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DeleteShoppingListButton } from "@/components/delete-shopping-list-button";
 import { Icon } from "@/components/icon-sprite";
 import { Button } from "@/components/ui/button";
 import { listShoppingLists } from "@/lib/shopping-list";
@@ -31,20 +32,29 @@ export default async function ShoppingListsIndexPage() {
       ) : (
         <ul className="flex flex-col gap-3">
           {lists.map((list) => (
-            <li key={list.id}>
+            <li
+              key={list.id}
+              className="flex items-center gap-2 rounded-2xl bg-surface px-2 py-2 shadow-[0_6px_16px_rgba(43,42,40,.05)] hover:shadow-[0_10px_24px_rgba(43,42,40,.08)]"
+            >
               <Link
                 href={`/listas/${list.id}`}
-                className="flex items-center justify-between rounded-2xl bg-surface px-5 py-4 shadow-[0_6px_16px_rgba(43,42,40,.05)] hover:shadow-[0_10px_24px_rgba(43,42,40,.08)]"
+                className="flex flex-1 items-center justify-between gap-3 px-3 py-2"
               >
-                <span className="font-bold">
+                <span className="flex items-center gap-2 font-bold">
                   {list.mealPlan
                     ? `Semana del ${formatWeekRangeLabel(list.mealPlan.weekStartDate)}`
                     : "Lista de súper"}
+                  {list.completedAt && (
+                    <span className="w-fit rounded-full bg-lime-tint px-2.5 py-0.5 text-[11px] font-bold text-lime-dark">
+                      Completada
+                    </span>
+                  )}
                 </span>
                 <span className="text-sm font-semibold text-ink-soft">
                   {list._count.items} artículos
                 </span>
               </Link>
+              <DeleteShoppingListButton id={list.id} iconOnly />
             </li>
           ))}
         </ul>

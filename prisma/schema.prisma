@@ -37,6 +37,24 @@ enum RecipeSourceType {
   URL_IMPORT
 }
 
+/// Estado del pipeline de importación en segundo plano (texto/URL + IA).
+/// READY es el default porque las recetas manuales no pasan por este
+/// pipeline y nunca deben quedar "atoradas" en PROCESSING.
+enum RecipeImportStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+/// Estado de la generación de imagen en segundo plano (manual o disparada
+/// automáticamente tras una importación exitosa).
+enum RecipeImageStatus {
+  NONE
+  GENERATING
+  READY
+  FAILED
+}
+
 model Recipe {
   id          String     @id @default(cuid())
   name        String
@@ -60,6 +78,16 @@ model Recipe {
   sourceType    RecipeSourceType @default(MANUAL)
   sourceUrl     String?
   sourceRawText String?          @db.Text
+
+  /// PROCESSING mientras el pipeline de importación con IA sigue corriendo
+  /// en segundo plano tras el redirect inicial (ver src/lib/recipe-import.ts).
+  importStatus RecipeImportStatus @default(READY)
+  importError  String?            @db.Text
+
+  /// GENERATING mientras Kie/sharp siguen trabajando en segundo plano tras
+  /// el redirect inicial (ver src/lib/recipe-image-generation.ts).
+  imageStatus RecipeImageStatus @default(NONE)
+  imageError  String?           @db.Text
 
   ingredients   Ingredient[]
   mealPlanItems MealPlanItem[]
@@ -135,6 +163,10 @@ model ShoppingList {
   mealPlan   MealPlan? @relation(fields: [mealPlanId], references: [id])
 
   items ShoppingListItem[]
+
+  /// Marcada por Jorge cuando ya terminó de comprar todo. No se borra sola
+  /// ni se filtra de /listas — solo se muestra atenuada/con badge.
+  completedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

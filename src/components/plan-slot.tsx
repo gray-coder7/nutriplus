@@ -43,7 +43,7 @@ export function PlanSlot({
                   />
                 </Link>
                 <form
-                  action={removeMealPlanItem.bind(null, item.id, weekParam)}
+                  action={removeMealPlanItem.bind(null, item.id, weekParam, dayOfWeek)}
                   className="absolute right-0.5 top-0.5"
                 >
                   <button
@@ -75,7 +75,7 @@ export function PlanSlot({
                 <div className="truncate text-[15px] font-bold">{item.recipe.name}</div>
                 <div className="text-xs font-semibold text-ink-faint">×{item.servings} porciones</div>
               </Link>
-              <form action={removeMealPlanItem.bind(null, item.id, weekParam)}>
+              <form action={removeMealPlanItem.bind(null, item.id, weekParam, dayOfWeek)}>
                 <button
                   type="submit"
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg leading-none text-ink-faint hover:text-error"

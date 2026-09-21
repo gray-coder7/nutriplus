@@ -475,6 +475,106 @@ Referencia: los otros apps del proyecto "Infraestructure" (`AskMe FrontEnd`,
 7. Avísame cuando esté creada (o dame el UUID) y reviso el estado del
    deploy / logs con las herramientas de Coolify que sí tengo.
 
+### Fase 8 — Ajustes post-lanzamiento
+
+Fricciones reales de uso diario que Jorge encontró tras usar la app con el
+deploy ya hecho (Fase 7). Cambia el pipeline de importación/generación de
+imagen a correr en segundo plano en vez de atado al request del navegador.
+
+- [x] **Importación y generación de imagen en segundo plano + auto-guardado.**
+      Antes, importar una receta (texto/URL/video) dejaba al usuario esperando
+      en la misma pantalla mientras Claude extraía la receta (y, si era un
+      reel/TikTok, mientras se transcribía el audio), y encima pedía revisar
+      y guardar a mano — y generar la imagen después era otro paso manual
+      fácil de olvidar. Ahora:
+      - `importRecipe` (`src/app/recetas/actions.ts`) crea de inmediato un
+        `Recipe` placeholder (`importStatus: PROCESSING`) y redirige a su
+        detalle en milisegundos; la extracción real corre después via
+        `after()` de `next/server` llamando a
+        `processRecipeImport` (`src/lib/recipe-import.ts`), que actualiza la
+        receta con los datos reales y, si todo salió bien, **encadena
+        automáticamente** la generación de imagen — ya no hace falta
+        acordarse de generarla.
+      - `generateRecipeImage` (`src/app/recetas/image-actions.ts`) sigue el
+        mismo patrón: marca `imageStatus: GENERATING` y agenda el trabajo
+        pesado con `after()` antes de redirigir, así que el click ya no
+        bloquea los ~70-90s de Kie y sobrevive a que el usuario cambie de
+        pestaña o navegue a otra pantalla.
+      - `after()` es seguro aquí porque el deploy es un contenedor Docker de
+        larga duración (`next start` en Coolify, no serverless) — el
+        callback sigue corriendo en el mismo proceso de Node después de
+        responder, sin el riesgo de congelamiento que `after()` existe para
+        cubrir en entornos serverless.
+      - Como no hay websockets, `src/components/recipe-status-poller.tsx`
+        (client, `setInterval` + `router.refresh()` cada 3s) refresca sola
+        la página de detalle mientras `importStatus === "PROCESSING"` o
+        `imageStatus === "GENERATING"`, así el usuario ve el resultado sin
+        recargar a mano.
+      - Mientras `imageStatus === "GENERATING"`, el ícono de IA para
+        generar/regenerar imagen (`GenerateImageButton`) no se muestra
+        clickeable — se reemplaza por un indicador estático — para no
+        encimar otro request de generación sobre el mismo recipe.
+      - Probado extremo a extremo con una llamada real (texto libre →
+        "Avena con plátano y miel"): el redirect ocurrió en <1s, la
+        extracción terminó en ~10s, y la imagen (1024×1024 WebP, ~140KB)
+        terminó en ~75s — durante ese tiempo el ícono de regenerar
+        permaneció oculto y reapareció justo al terminar.
+- [x] **"Agregar al plan" con selector de día/comida.** El botón en el
+      detalle de receta (`src/app/recetas/[id]/page.tsx`) antes solo
+      enlazaba a `/plan` sin agregar nada. Ahora abre un `<dialog>` nativo
+      (`src/components/add-to-plan-button.tsx` — sin dependencias nuevas,
+      mismo nivel de "JS solo donde hace falta" que ya usaba
+      `DeleteRecipeButton`) con pills de día/comida y porciones, que llama a
+      la nueva acción `addRecipeToPlan` (`src/app/plan/actions.ts`). Se
+      agrega siempre a la semana actual — no hay selector de semana desde
+      aquí (simplificación de V1). El helper de escritura
+      (`addMealPlanItem`, `src/lib/meal-plans.ts`) se compartió entre esta
+      acción y el `assignMealPlanItem` que ya usaba `plan-slot.tsx`.
+- [x] **El planeador ya no regresa a lunes al agregar/quitar.**
+      `assignMealPlanItem` y `removeMealPlanItem` (`src/app/plan/actions.ts`)
+      ahora incluyen `?day=` en su redirect (antes solo `?week=`), así la
+      vista de un día a la vez en mobile se queda en el día que se estaba
+      viendo en vez de saltar a lunes.
+- [x] **Menú "crear receta" con opción manual/IA** en el dashboard
+      (`src/components/create-recipe-menu.tsx`) — antes el quick-action iba
+      directo a `/recetas/nueva`. Es un `<details>`/`<summary>` nativo, cero
+      JS, mismo espíritu de progressive enhancement que el resto de la app.
+- [x] **Compresión de imágenes + cache real.** Las imágenes de Kie se
+      comprimen ahora con `sharp` (`src/lib/recipe-image-generation.ts`):
+      redimensionadas a máximo 1024px y convertidas a WebP calidad 80 (las
+      tarjetas renderizan a ~170px, el hero a ~340px, así que 1024px sobra
+      hasta en pantallas de alta densidad). `Cache-Control` en
+      `/api/recipe-images/[id]` pasó de `private, max-age=60` a
+      `public, max-age=31536000, immutable`, seguro porque toda referencia a
+      la imagen ya incluye `?v=<updatedAt>` como cache-buster
+      (`recipe-card.tsx`, hero de `/recetas/[id]`).
+      - **Backfill + barrido periódico, a pedido de Jorge:** las imágenes
+        generadas antes de este cambio quedaron sin comprimir, y la
+        compresión con `sharp` en el momento de generar podría fallar en
+        casos raros (en ese caso se guardan los bytes crudos tal cual, sin
+        tirar la receta completa). No hay job runner externo en el
+        proyecto, así que `src/instrumentation.ts` registra un
+        `setInterval` de **24 horas** (con una primera corrida a los ~10s
+        de levantar el server) que llama a `compressUncompressedImages()`
+        (`src/lib/image-compression-sweep.ts`) — cualquier `RecipeImage`
+        cuyo `mimeType` no sea `image/webp` se toma como señal de "falta
+        comprimir" y se procesa (hasta 20 por corrida). Corre dentro del
+        mismo proceso de Node de Coolify; no hace falta lock porque solo
+        hay un contenedor de esta app, sin réplicas.
+- [x] **Eliminar / completar lista de súper.** Nuevo campo
+      `ShoppingList.completedAt`. Nuevas acciones
+      `setShoppingListCompleted`/`deleteShoppingList`
+      (`src/app/listas/actions.ts`), botones en `/listas/[id]` y un ícono de
+      eliminar por fila en `/listas` (`DeleteShoppingListButton`, mismo
+      patrón de confirmación con `window.confirm` que `DeleteRecipeButton`).
+
+Probado extremo a extremo en dev con Playwright (instalado temporalmente,
+`--no-save`, desinstalado al terminar — mismo patrón que Fase 6): flujo
+completo de importación real (Claude + Kie + sharp), diálogo de agregar al
+plan con día/comida reales, no-reset a lunes, menú manual/IA del dashboard,
+y completar/reabrir/eliminar lista de súper. Los datos de prueba se
+limpiaron de la DB local al terminar.
+
 ## Assets de diseño
 
 Ver [`design-mockups-prompt.md`](./design-mockups-prompt.md): prompt listo

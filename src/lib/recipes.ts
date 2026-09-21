@@ -8,7 +8,10 @@ export function listRecipes(mealTypes: MealType[] = [], query?: string) {
       name: query ? { contains: query, mode: "insensitive" } : undefined,
     },
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { ingredients: true } } },
+    include: {
+      _count: { select: { ingredients: true } },
+      image: { select: { updatedAt: true } },
+    },
   });
 }
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CreateRecipeMenu } from "@/components/create-recipe-menu";
 import { Icon } from "@/components/icon-sprite";
 import { RecipeCard } from "@/components/recipe-card";
 import { MEAL_TYPE_ORDER } from "@/lib/constants";
@@ -17,7 +18,6 @@ function todayLabel(): string {
 }
 
 const QUICK_ACTIONS = [
-  { href: "/recetas/nueva", label: "Agregar receta", icon: "plus", bg: "bg-coral-tint", fg: "text-coral-dark" },
   { href: "/recetas", label: "Ver biblioteca", icon: "book", bg: "bg-aqua-tint", fg: "text-aqua-dark" },
   { href: "/plan", label: "Planear semana", icon: "calendar", bg: "bg-lime-tint", fg: "text-lime-dark" },
 ] as const;
@@ -108,6 +108,7 @@ export default async function DashboardPage() {
 
       {/* Quick actions */}
       <div className="mb-9 grid grid-cols-2 gap-3.5 sm:grid-cols-4 sm:gap-5">
+        <CreateRecipeMenu />
         {QUICK_ACTIONS.map((action) => (
           <Link
             key={action.href}
@@ -170,6 +171,7 @@ export default async function DashboardPage() {
                 carbsGPerServing={recipe.carbsGPerServing}
                 fatGPerServing={recipe.fatGPerServing}
                 imageUrl={recipe.imageUrl}
+                imageVersion={recipe.image?.updatedAt.getTime()}
               />
             ))}
           </div>
