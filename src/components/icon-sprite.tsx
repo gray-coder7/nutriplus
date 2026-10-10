@@ -21,7 +21,8 @@ export function IconSprite() {
         <symbol id="ic-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></symbol>
         <symbol id="ic-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.6" y2="16.6" /></symbol>
         <symbol id="ic-sparkle-sm" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="6" cy="7" r="1.4" /><circle cx="19" cy="6" r="1" /><circle cx="20" cy="17" r="1.6" /></symbol>
-        <symbol id="ic-food" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8.2" /><circle cx="12" cy="12" r="4" /></symbol>
+        <symbol id="ic-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></symbol>
+        <symbol id="ic-food"viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8.2" /><circle cx="12" cy="12" r="4" /></symbol>
       </defs>
     </svg>
   );

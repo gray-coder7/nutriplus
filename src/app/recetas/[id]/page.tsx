@@ -6,6 +6,7 @@ import { GenerateImageButton } from "@/components/generate-image-button";
 import { Icon } from "@/components/icon-sprite";
 import { RecipeServings } from "@/components/recipe-servings";
 import { RecipeStatusPoller } from "@/components/recipe-status-poller";
+import { SourceLinkButton } from "@/components/source-link-button";
 import { Button } from "@/components/ui/button";
 import { MEAL_TYPE_LABELS, recipeFallbackGradient } from "@/lib/constants";
 import { getRecipeById } from "@/lib/recipes";
@@ -117,6 +118,7 @@ export default async function RecetaDetailPage({
                   Editar receta
                 </Button>
               </Link>
+              <SourceLinkButton sourceUrl={recipe.sourceUrl} />
               <AddToPlanButton
                 recipeId={recipe.id}
                 defaultServings={recipe.baseServings}
