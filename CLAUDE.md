@@ -567,6 +567,14 @@ imagen a correr en segundo plano en vez de atado al request del navegador.
       (`src/app/listas/actions.ts`), botones en `/listas/[id]` y un ícono de
       eliminar por fila en `/listas` (`DeleteShoppingListButton`, mismo
       patrón de confirmación con `window.confirm` que `DeleteRecipeButton`).
+- [x] **Botón a la fuente original en el detalle de receta.** Si la receta
+      tiene `sourceUrl` (importada por URL), `SourceLinkButton`
+      (`src/components/source-link-button.tsx`) muestra "Ver en Instagram" /
+      "Ver en TikTok" / "Ver original (host)". Es un `<a target="_blank">` https
+      normal a propósito: en móvil los universal links de instagram.com y
+      tiktok.com abren la app instalada en vez del navegador. No hizo falta
+      migración ni backfill: `sourceUrl` ya se guardaba desde Fase 1, así que
+      las recetas importadas antes ya muestran el botón.
 
 Probado extremo a extremo en dev con Playwright (instalado temporalmente,
 `--no-save`, desinstalado al terminar — mismo patrón que Fase 6): flujo

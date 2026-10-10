@@ -29,7 +29,7 @@ export function SourceLinkButton({ sourceUrl }: { sourceUrl: string | null }) {
       href={url.toString()}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-surface px-6 text-sm font-bold text-ink transition-colors hover:bg-bg"
+      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-surface px-6 text-sm font-bold text-ink transition-colors hover:bg-border-light"
     >
       <Icon name="external" size={16} />
       {describeSource(url)}
